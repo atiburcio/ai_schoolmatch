@@ -14,7 +14,6 @@ An intelligent college recommendation system built with LangGraph and LangChain 
 - Vector database storage for efficient similarity search
 - Interactive feedback system to refine recommendations
 - LangGraph Studio integration for workflow visualization and debugging
-- FastAPI backend for API access
 
 ## Setup
 
@@ -46,7 +45,6 @@ LANGCHAIN_PROJECT=schoolmatch-ai
   - `cli.py`: Command-line interface
 - `models/`: Data models for college information
 - `db/`: Vector database operations for college similarity search
-- `api/`: FastAPI endpoints for web access
 - `scripts/`: Utility scripts including database population
 - `chroma_db/`: Vector database storage
 
