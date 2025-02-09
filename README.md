@@ -1,19 +1,20 @@
 # SchoolMatch AI
 
-An intelligent college recommendation system built with LangGraph and LangChain that helps find similar colleges based on preferences. The system uses advanced language models and vector similarity search to provide personalized college recommendations.
+An intelligent college merger analysis system built with LangGraph and LangChain that helps evaluate potential college partnerships and mergers. The system uses advanced language models to analyze compatibility between institutions and provide detailed recommendations.
 
 ## Features
 
-- Find similar colleges based on multiple criteria including:
-  - School type (public/private)
-  - Size category
-  - Academic reputation
-  - Location type
-  - Cost category
-  - Key academic programs
-- Vector database storage for efficient similarity search
-- Interactive feedback system to refine recommendations
-- LangGraph Studio integration for workflow visualization and debugging
+- Comprehensive merger analysis including:
+  - Strategic fit assessment (40%)
+  - Cultural alignment evaluation (30%)
+  - Operational feasibility analysis (30%)
+- Detailed compatibility scoring for potential partners
+- Structured recommendations with:
+  - Key synergies identification
+  - Risk assessment
+  - Financial impact analysis
+- LangGraph workflow for systematic analysis
+- Vector database for efficient college data storage and retrieval
 
 ## Setup
 
@@ -29,41 +30,81 @@ pip install -r requirements.txt
 ```
 
 3. Set up environment variables:
-Create a `.env` file with your API keys and configuration:
+Create a `.env` file with your API keys:
 ```
 OPENAI_API_KEY=your_openai_api_key
-LANGCHAIN_API_KEY=your_langchain_api_key
-LANGCHAIN_TRACING_V2=true
-LANGCHAIN_ENDPOINT=https://api.smith.langchain.com
-LANGCHAIN_PROJECT=schoolmatch-ai
 ```
 
 ## Project Structure
 
-- `langchain_app/`: Contains the core recommendation engine and LangGraph workflow
-  - `school_matcher.py`: Main recommendation logic
-  - `cli.py`: Command-line interface
+- `langchain_app/`: Core analysis engine and LangGraph workflow
+  - `merger_analyzer.py`: Compatibility analysis logic
+  - `school_matcher_graph.py`: LangGraph workflow definition
+  - `school_matcher.py`: College matching logic
 - `models/`: Data models for college information
-- `db/`: Vector database operations for college similarity search
-- `scripts/`: Utility scripts including database population
-- `chroma_db/`: Vector database storage
+- `db/`: Vector database operations and college data
+- `scripts/`: Utility scripts for database operations
+- `chroma_db/`: Vector database storage (not tracked in git)
 
-## Usage
+## Running the Analysis
 
-1. Populate the college database:
+### Using the Jupyter Notebook
+
+1. Start Jupyter:
 ```bash
-python scripts/populate_colleges.py
+jupyter notebook
 ```
 
-2. Run the recommendation system:
+2. Open `school_matcher_graph.ipynb`
+
+3. Run all cells in sequence. The notebook will:
+   - Initialize the LangGraph workflow
+   - Load the college vector database
+   - Analyze compatibility with potential partners
+   - Generate a detailed recommendation
+
+Example usage in the notebook:
 ```python
-from langchain_app.school_matcher import get_school_recommendations
+result = run_school_matcher(graph, "Your University Name")
 
-# Get recommendations with interactive feedback
-recommendations = get_school_recommendations(
-    school_name="Your Target School",
-    interactive=True
-)
+# Print analyses
+for analysis in result["compatibility_analyses"]:
+    print(analysis)
+
+# Print final recommendation
+print("\nFinal Recommendation:")
+print(result["final_recommendation"])
 ```
 
-3. View traces and debug workflows in LangGraph Studio at [smith.langchain.com](https://smith.langchain.com)
+### Using the Python API
+
+```python
+from langchain_app.school_matcher import create_school_matcher_graph
+from db.college_vector_store import CollegeVectorStore
+
+# Initialize components
+vector_store = CollegeVectorStore()
+graph = create_school_matcher_graph(vector_store)
+
+# Run analysis
+result = graph.run({
+    "messages": [{"role": "user", "content": "Your University Name"}]
+})
+```
+
+## Data Storage
+
+The system uses a ChromaDB vector database to store college information. The database files are not tracked in git due to size constraints. To set up the database:
+
+1. Run the database population script:
+```bash
+python scripts/access_to_vector_mac.py.py
+```
+
+2. The script will create the necessary database files in the `chroma_db/` directory
+
+## Notes
+
+- The system currently uses the GPT-3.5-turbo model for analysis
+- Make sure your OpenAI API key has sufficient credits
+- Keep the `chroma_db/` directory in your `.gitignore` to avoid large file issues
