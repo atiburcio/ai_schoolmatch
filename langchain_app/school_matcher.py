@@ -234,7 +234,7 @@ def get_school_recommendations(school_name: str, vector_store: CollegeVectorStor
     # Initialize LLM
     llm = ChatOpenAI(
         model="gpt-3.5-turbo",
-        temperature=0.7,
+        temperature=0.0,
         api_key=get_openai_api_key()
     )
     
