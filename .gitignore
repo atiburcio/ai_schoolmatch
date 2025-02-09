@@ -1,5 +1,8 @@
 # Environment variables
 .env
+.venv
+env/
+venv/
 
 # Python
 __pycache__/
@@ -7,7 +10,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
 build/
 develop-eggs/
 dist/
@@ -23,6 +25,14 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Database files
+*.accdb
+chroma_db/
+*.sqlite3
+
+# OS files
+.DS_Store
 
 # Jupyter Notebook
 .ipynb
