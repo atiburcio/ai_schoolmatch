@@ -32,25 +32,40 @@ def create_merger_feature_extractor(llm):
 
 def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm):
     """Creates a node that analyzes compatibility between institutions"""
-    template = """Analyze compatibility between institutions:
+    template = """Analyze the compatibility between the target institution and potential partners.
+    Consider these factors in order of importance:
 
-    Key Factors:
-    1. Strategic (40%): Market, programs, revenue, costs
-    2. Cultural (30%): Mission, values, history, governance
-    3. Operational (30%): Location, tech, accreditation, regulation
+    1. Strategic Fit (40% weight):
+        - Market expansion opportunities
+        - Program portfolio complementarity
+        - Revenue synergy potential
+        - Cost efficiency opportunities
 
-    Target: {features}
-    Partner: {partner_description}
+    2. Cultural Alignment (30% weight):
+        - Mission statement compatibility
+        - Shared values and educational philosophy
+        - Historical focus and tradition
+        - Governance structure compatibility
 
-    Provide:
-    1. Score (0-100)
+    3. Operational Feasibility (30% weight):
+        - Geographic proximity/overlap
+        - Technology infrastructure compatibility
+        - Accreditation requirements
+        - Regulatory considerations
+
+    Target Features: {features}
+    Potential Partner: {partner_description}
+
+    Provide a structured analysis of the compatibility, including:
+    1. Compatibility Score (0-100)
     2. Key Synergies
-    3. Challenges
-    4. Risks"""
+    3. Potential Challenges
+    4. Risk Factors
+    """
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", template),
-        ("human", "Target: {features}\nPartner: {partner_description}")
+        ("human", "Target Features: {features}\nPotential Partner: {partner_description}")
     ])
     
     chain = prompt | llm
@@ -137,32 +152,41 @@ def create_merger_recommendation_formatter(llm):
     return recommendation_formatter
 
 def create_final_recommender(llm):
-    template = """Based on the compatibility analyses, provide a final recommendation with:
-
+    template = """Given the following compatibility analyses and recommendations, provide a final recommendation for the merger.
+    
+    {recommendations}
+    
+    Please provide a structured analysis with the following sections:
+    
     1. Executive Summary
-    - Top partners and scores
-    - Key recommendation
+    - Brief overview of the top recommended partner(s)
+    - Key compatibility scores
+    - High-level recommendation
     
-    2. Analysis
-    - Strategic alignment
-    - Cultural fit
-    - Operations
+    2. Compatibility Analysis
+    - Analysis of strategic fit
+    - Cultural alignment assessment
+    - Operational synergies
     
-    3. Risks & Mitigation
+    3. Risk Assessment
+    - Key risks identified
+    - Potential mitigation strategies
     
     4. Next Steps
-    - Actions
-    - Timeline
-    - Stakeholders
+    - Recommended immediate actions
+    - Timeline considerations
+    - Key stakeholders to involve
     
-    5. Financial Impact
-    - Synergies
-    - Costs
-    - ROI timeline
+    5. Financial Considerations
+    - Potential synergies and cost savings
+    - Investment requirements
+    - Expected ROI timeline
     
-    6. Conclusion
-    - Final choice
-    - Success factors"""
+    6. Closing Remarks
+    - Final recommendation
+    - Critical success factors
+    
+    Format the report in a clear, professional style suitable for investment banking presentation."""
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", template),
