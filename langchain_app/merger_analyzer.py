@@ -5,12 +5,12 @@ This module provides functionality for analyzing potential mergers between educa
 It uses LangChain for natural language processing and ChromaDB for vector similarity search.
 """
 
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass
+from typing import Dict, List, Optional, Any, Callable
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from db.college_vector_store import CollegeVectorStore
+from .models import AnalysisState, CompatibilityAnalysis
 
 __all__ = [
     'create_feature_extractor',
@@ -46,26 +46,14 @@ PROGRAM_LEVELS = {
     'LEVEL19': 'Doctor\'s degree - other'
 }
 
-@dataclass
-class AnalysisState:
-    """Class to manage the state of the merger analysis pipeline."""
-    school: str
-    features: str = ""
-    compatibility_analyses: List[Dict[str, Any]] = None
-    recommendations: str = ""
-    final_recommendation: str = ""
-
-    def __post_init__(self):
-        self.compatibility_analyses = self.compatibility_analyses or []
-
-def create_feature_extractor(llm: ChatOpenAI):
+def create_feature_extractor(llm: ChatOpenAI) -> Callable[[AnalysisState], AnalysisState]:
     """Creates a node that extracts M&A-relevant features from the target institution.
     
     Args:
         llm: Language model for feature extraction
         
     Returns:
-        Callable that takes a state dict and returns updated state with extracted features
+        Callable that takes an AnalysisState and returns updated state with extracted features
     """
     template = """Extract M&A-relevant features for the target institution in these areas:
     1. Financial: Type (public/private), size/scope, key revenue programs
@@ -84,18 +72,20 @@ def create_feature_extractor(llm: ChatOpenAI):
     
     chain = prompt | llm
     
-    def feature_extractor(state: Dict[str, Any]) -> Dict[str, Any]:
+    def feature_extractor(state: AnalysisState) -> AnalysisState:
         """Extract features from the school description."""
         try:
-            response = chain.invoke({"school": state["school"]})
-            state["features"] = response.content
-            state["compatibility_analyses"] = []
-            state["recommendations"] = ""
-            state["final_recommendation"] = ""
-            return state
+            response = chain.invoke({"school": state.school})
+            return AnalysisState(
+                school=state.school,
+                features=response.content,
+                compatibility_analyses=[],
+                recommendations="",
+                final_recommendation=""
+            )
         except Exception as e:
             print(f"Error in feature extractor: {str(e)}")
-            return AnalysisState(state["school"]).__dict__
+            return AnalysisState(school=state.school)
     
     return feature_extractor
 
@@ -125,7 +115,7 @@ Additional Information:
 {document}
 """
 
-def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpenAI):
+def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpenAI) -> Callable[[AnalysisState], AnalysisState]:
     """Creates a node that analyzes compatibility between institutions.
     
     Args:
@@ -133,7 +123,7 @@ def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpe
         llm: Language model for compatibility analysis
         
     Returns:
-        Callable that takes a state dict and returns updated state with compatibility analyses
+        Callable that takes an AnalysisState and returns updated state with compatibility analyses
     """
     template = """Analyze the compatibility between the target institution and potential partners.
     Consider these factors in order of importance:
@@ -173,21 +163,21 @@ def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpe
     
     chain = prompt | llm
     
-    def compatibility_analyzer(state: Dict[str, Any]) -> Dict[str, Any]:
+    def compatibility_analyzer(state: AnalysisState) -> AnalysisState:
         """Analyze compatibility with potential partner institutions."""
         try:
-            if not state.get("features"):
+            if not state.features:
                 print("Error: No features found in state")
                 return state
             
             # Get more matches than needed since we'll filter some out
-            matches = vector_store.find_similar_colleges(state["features"], n_results=10)
+            matches = vector_store.find_similar_colleges(state.features, n_results=10)
             if not matches:
                 print("No matches found in vector store")
                 return state
             
             compatibility_analyses = []
-            target_school = state["school"].lower().strip()
+            target_school = state.school.lower().strip()
             
             for match in matches:
                 school_name = match['metadata'].get('INSTNM', '').lower().strip()
@@ -198,39 +188,49 @@ def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpe
                 
                 partner_info = format_partner_info(match['metadata'], match['document'])
                 response = chain.invoke({
-                    "features": state["features"],
+                    "features": state.features,
                     "partner_description": partner_info
                 })
                 
-                compatibility_analyses.append({
-                    "school": match['metadata'].get('INSTNM', 'Unknown Institution'),
-                    "location": f"{match['metadata'].get('CITY', 'N/A')}, {match['metadata'].get('STABBR', 'N/A')}",
-                    "analysis": response.content,
-                    "similarity_score": 1.0 - match['distance']
-                })
+                compatibility_analyses.append(CompatibilityAnalysis(
+                    school=match['metadata'].get('INSTNM', 'Unknown Institution'),
+                    location=f"{match['metadata'].get('CITY', 'N/A')}, {match['metadata'].get('STABBR', 'N/A')}",
+                    analysis=response.content,
+                    similarity_score=1.0 - match['distance']
+                ))
                 
                 # Stop once we have x unique institutions
                 if len(compatibility_analyses) == 10:
                     break
             
-            state["compatibility_analyses"] = compatibility_analyses
-            return state
+            return AnalysisState(
+                school=state.school,
+                features=state.features,
+                compatibility_analyses=compatibility_analyses,
+                recommendations=state.recommendations,
+                final_recommendation=state.final_recommendation
+            )
             
         except Exception as e:
             print(f"Error in compatibility analyzer: {str(e)}")
-            state["compatibility_analyses"] = []
-            return state
+            return AnalysisState(
+                school=state.school,
+                features=state.features,
+                compatibility_analyses=[],
+                recommendations=state.recommendations,
+                final_recommendation=state.final_recommendation
+            )
     
     return compatibility_analyzer
 
-def create_recommendation_formatter(llm: ChatOpenAI):
+def create_recommendation_formatter(llm: ChatOpenAI) -> Callable[[AnalysisState], AnalysisState]:
     """Creates a node that formats merger recommendations.
     
     Args:
         llm: Language model for formatting recommendations
         
     Returns:
-        Callable that takes a state dict and returns updated state with formatted recommendations
+        Callable that takes an AnalysisState and returns updated state with formatted recommendations
     """
     template = """Based on the compatibility analyses, create a detailed M&A recommendation report.
     For each potential partner, include:
@@ -266,28 +266,37 @@ def create_recommendation_formatter(llm: ChatOpenAI):
     
     chain = prompt | llm
     
-    def recommendation_formatter(state: Dict[str, Any]) -> Dict[str, Any]:
+    def recommendation_formatter(state: AnalysisState) -> AnalysisState:
         """Format recommendations based on compatibility analyses."""
         try:
-            compatibility_analyses = state.get("compatibility_analyses", [])
-            response = chain.invoke({"compatibility_analyses": str(compatibility_analyses)})
-            state["recommendations"] = response.content
-            return state
+            response = chain.invoke({"compatibility_analyses": str([analysis.model_dump() for analysis in state.compatibility_analyses])})
+            return AnalysisState(
+                school=state.school,
+                features=state.features,
+                compatibility_analyses=state.compatibility_analyses,
+                recommendations=response.content,
+                final_recommendation=state.final_recommendation
+            )
         except Exception as e:
             print(f"Error in recommendation formatter: {str(e)}")
-            state["recommendations"] = ""
-            return state
+            return AnalysisState(
+                school=state.school,
+                features=state.features,
+                compatibility_analyses=state.compatibility_analyses,
+                recommendations="",
+                final_recommendation=state.final_recommendation
+            )
     
     return recommendation_formatter
 
-def create_final_recommender(llm: ChatOpenAI):
+def create_final_recommender(llm: ChatOpenAI) -> Callable[[AnalysisState], AnalysisState]:
     """Creates a node that makes the final recommendation.
     
     Args:
         llm: Language model for final recommendation
         
     Returns:
-        Callable that takes a state dict and returns updated state with final recommendation
+        Callable that takes an AnalysisState and returns updated state with final recommendation
     """
     template = """You are an expert investment banker who specializes in merger and acquisition (M&A) decisions. Given the following compatibility analyses and recommendations, provide a final recommendation for the merger.
     
@@ -332,16 +341,25 @@ def create_final_recommender(llm: ChatOpenAI):
     
     chain = prompt | llm
     
-    def final_recommender(state: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate final recommendation based on previous analyses."""
+    def final_recommender(state: AnalysisState) -> AnalysisState:
+        """Generate final recommendation based on all analyses."""
         try:
-            recommendations = state.get("recommendations", "")
-            response = chain.invoke({"recommendations": recommendations})
-            state["final_recommendation"] = response.content
-            return state
+            response = chain.invoke({"recommendations": state.recommendations})
+            return AnalysisState(
+                school=state.school,
+                features=state.features,
+                compatibility_analyses=state.compatibility_analyses,
+                recommendations=state.recommendations,
+                final_recommendation=response.content
+            )
         except Exception as e:
             print(f"Error in final recommender: {str(e)}")
-            state["final_recommendation"] = ""
-            return state
+            return AnalysisState(
+                school=state.school,
+                features=state.features,
+                compatibility_analyses=state.compatibility_analyses,
+                recommendations=state.recommendations,
+                final_recommendation=""
+            )
     
     return final_recommender
