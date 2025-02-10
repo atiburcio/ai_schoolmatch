@@ -37,19 +37,19 @@ def create_school_matcher_graph(vector_store: CollegeVectorStore):
     workflow = StateGraph(State)
     
     # Add nodes
-    workflow.add_node("merger_feature_extractor", create_feature_extractor(llm))
+    workflow.add_node("target_school_feature_extractor", create_feature_extractor(llm))
     workflow.add_node("compatibility_analyzer", create_compatibility_analyzer(vector_store, llm))
     workflow.add_node("merger_recommendation_formatter", create_recommendation_formatter(llm))
     workflow.add_node("final_recommender", create_final_recommender(llm))
     
     # Add edges
-    workflow.add_edge("merger_feature_extractor", "compatibility_analyzer")
+    workflow.add_edge("target_school_feature_extractor", "compatibility_analyzer")
     workflow.add_edge("compatibility_analyzer", "merger_recommendation_formatter")
     workflow.add_edge("merger_recommendation_formatter", "final_recommender")
     workflow.add_edge("final_recommender", END)
     
     # Set the entry point
-    workflow.set_entry_point("merger_feature_extractor")
+    workflow.set_entry_point("target_school_feature_extractor")
     
     # Compile the graph
     return workflow.compile()
