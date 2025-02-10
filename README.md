@@ -55,7 +55,7 @@ OPENAI_API_KEY=your_openai_api_key
 jupyter notebook
 ```
 
-2. Open `school_matcher_graph.ipynb`
+2. Open `school_matcher_demo.ipynb`
 
 3. Run all cells in sequence. The notebook will:
    - Initialize the LangGraph workflow

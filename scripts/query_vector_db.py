@@ -26,7 +26,7 @@ def main():
     
     # Query for Stanford University
     results = collection.query(
-        query_texts=["BYU"],
+        query_texts=["Alabama State University"],
         n_results=3
     )
     

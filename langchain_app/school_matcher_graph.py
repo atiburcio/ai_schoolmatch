@@ -3,9 +3,9 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from typing import Annotated, TypedDict, List
 from langchain_app.merger_analyzer import (
-    create_merger_feature_extractor,
+    create_feature_extractor,
     create_compatibility_analyzer,
-    create_merger_recommendation_formatter,
+    create_recommendation_formatter,
     create_final_recommender
 )
 from db.college_vector_store import CollegeVectorStore
@@ -37,9 +37,9 @@ def create_school_matcher_graph(vector_store: CollegeVectorStore):
     workflow = StateGraph(State)
     
     # Add nodes
-    workflow.add_node("merger_feature_extractor", create_merger_feature_extractor(llm))
+    workflow.add_node("merger_feature_extractor", create_feature_extractor(llm))
     workflow.add_node("compatibility_analyzer", create_compatibility_analyzer(vector_store, llm))
-    workflow.add_node("merger_recommendation_formatter", create_merger_recommendation_formatter(llm))
+    workflow.add_node("merger_recommendation_formatter", create_recommendation_formatter(llm))
     workflow.add_node("final_recommender", create_final_recommender(llm))
     
     # Add edges

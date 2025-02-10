@@ -1,15 +1,30 @@
 import chromadb
 from chromadb.config import Settings
+from chromadb.utils import embedding_functions
 from typing import List, Dict, Any, Optional
 from models.college import College
+import os
+import logging
 
 class CollegeVectorStore:
     def __init__(self, persist_directory: str = "./chroma_db"):
-        self.client = chromadb.Client(Settings(
-            persist_directory=persist_directory,
-            is_persistent=True
-        ))
-        self.collection = self.client.get_or_create_collection("colleges")
+        # Configure ChromaDB logging
+        logging.getLogger('chromadb').setLevel(logging.ERROR)
+        
+        # Initialize OpenAI embedding function
+        self.embedding_function = embedding_functions.OpenAIEmbeddingFunction(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            model_name="text-embedding-ada-002"
+        )
+        
+        # Initialize Chroma client
+        self.client = chromadb.PersistentClient(path=persist_directory)
+        
+        # Get or create collection with embedding function
+        self.collection = self.client.get_or_create_collection(
+            name="ipeds_colleges",
+            embedding_function=self.embedding_function
+        )
 
     def _clean_metadata(self, value: Any) -> str:
         """Convert None values to empty string and all other values to string."""
@@ -46,18 +61,22 @@ class CollegeVectorStore:
         """Find colleges similar to the query description."""
         results = self.collection.query(
             query_texts=[query],
-            n_results=n_results
+            n_results=n_results,
+            include=['metadatas', 'distances', 'documents']
         )
+        
         return [
             {
                 "id": id,
                 "metadata": metadata,
-                "distance": distance
+                "distance": distance,
+                "document": document
             }
-            for id, metadata, distance in zip(
+            for id, metadata, distance, document in zip(
                 results["ids"][0],
                 results["metadatas"][0],
-                results["distances"][0]
+                results["distances"][0],
+                results["documents"][0]
             )
         ]
 
@@ -142,11 +161,14 @@ class CollegeVectorStore:
     def get_all_colleges(self) -> List[Dict[str, Any]]:
         """Get all colleges in the vector store."""
         result = self.collection.get(include=['metadatas', 'documents'])
+        if not result["ids"]:
+            return []
+            
         return [
             {
                 "id": id,
                 "metadata": metadata,
-                "description": document
+                "document": document
             }
             for id, metadata, document in zip(
                 result["ids"],
