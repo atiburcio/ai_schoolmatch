@@ -10,7 +10,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from db.college_vector_store import CollegeVectorStore
-from .models import AnalysisState, CompatibilityAnalysis
+from models import AnalysisState, CompatibilityAnalysis
 
 __all__ = [
     'create_feature_extractor',
