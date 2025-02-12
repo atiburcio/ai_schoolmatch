@@ -2,12 +2,10 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from typing import Annotated, TypedDict, List
-from langchain_app.merger_analyzer import (
-    create_feature_extractor,
-    create_compatibility_analyzer,
-    create_recommendation_formatter,
-    create_final_recommender
-)
+from langchain_app.nodes.extract_target_features.base import create_feature_extractor
+from langchain_app.nodes.compatibility_analyzer.base import create_compatibility_analyzer
+from langchain_app.nodes.rec_formatter.base import create_recommendation_formatter
+from langchain_app.nodes.final_rec.base import create_final_recommender
 from db.college_vector_store import CollegeVectorStore
 import os
 from dotenv import load_dotenv

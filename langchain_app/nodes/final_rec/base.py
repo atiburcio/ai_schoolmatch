@@ -1,0 +1,54 @@
+
+from typing import Callable
+
+from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import AIMessage
+from langchain_app.nodes.final_rec.prompt import HUMAN_MESSAGE, SYSTEM_MESSAGE
+
+from models import AnalysisState
+
+
+
+def create_final_recommender(llm: ChatOpenAI) -> Callable[[AnalysisState], AnalysisState]:
+    """Creates a node that makes the final recommendation.
+    
+    Args:
+        llm: Language model for final recommendation
+        
+    Returns:
+        Callable that takes an AnalysisState and returns updated state with final recommendation
+    """
+
+    prompt = ChatPromptTemplate.from_messages([
+        SystemMessagePromptTemplate.from_template(SYSTEM_MESSAGE),
+        HumanMessagePromptTemplate.from_template(HUMAN_MESSAGE),
+    ])
+    
+    chain = prompt | llm
+    
+    def final_recommender(state: AnalysisState) -> AnalysisState:
+        """Generate final recommendation based on all analyses."""
+        try:
+            response: AIMessage = chain.invoke({
+                "recommendations": state.recommendations,
+                "run_name": "Final Recommendation"
+            })
+            return AnalysisState(
+                school=state.school,
+                features=state.features,
+                compatibility_analyses=state.compatibility_analyses,
+                recommendations=state.recommendations,
+                final_recommendation=response.content
+            )
+        except Exception as e:
+            print(f"Error in final recommender: {str(e)}")
+            return AnalysisState(
+                school=state.school,
+                features=state.features,
+                compatibility_analyses=state.compatibility_analyses,
+                recommendations=state.recommendations,
+                final_recommendation=""
+            )
+    
+    return final_recommender
