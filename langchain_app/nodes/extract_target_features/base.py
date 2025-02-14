@@ -4,7 +4,7 @@ from typing import Callable
 from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
-from langchain_app.nodes.extract_target_features.prompt import HUMAN_TEMPLATE, SYSTEM_TEMPLATE
+from langchain_app.nodes.extract_target_features.prompt import HUMAN_MESSAGE, SYSTEM_MESSAGE
 
 from models import AnalysisState
 
@@ -18,8 +18,8 @@ def create_feature_extractor(llm: ChatOpenAI) -> Callable[[AnalysisState], Analy
         Callable that takes an AnalysisState and returns updated state with extracted features
     """
     prompt = ChatPromptTemplate.from_messages([
-        SystemMessagePromptTemplate.from_template(SYSTEM_TEMPLATE),
-        HumanMessagePromptTemplate.from_template(HUMAN_TEMPLATE),
+        SystemMessagePromptTemplate.from_template(SYSTEM_MESSAGE),
+        HumanMessagePromptTemplate.from_template(HUMAN_MESSAGE),
     ])
     
     chain = prompt | llm

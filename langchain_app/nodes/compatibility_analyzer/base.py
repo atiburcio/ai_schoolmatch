@@ -4,7 +4,7 @@ from typing import Callable
 from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
-from langchain_app.nodes.compatibility_analyzer.prompt import HUMAN_TEMPLATE, SYSTEM_TEMPLATE
+from langchain_app.nodes.compatibility_analyzer.prompt import HUMAN_MESSAGE, SYSTEM_MESSAGE
 
 from models import AnalysisState, CompatibilityAnalysis
 from db.college_vector_store import CollegeVectorStore
@@ -50,8 +50,8 @@ def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpe
     """
 
     prompt = ChatPromptTemplate.from_messages([
-        SystemMessagePromptTemplate.from_template(SYSTEM_TEMPLATE),
-        HumanMessagePromptTemplate.from_template(HUMAN_TEMPLATE),
+        SystemMessagePromptTemplate.from_template(SYSTEM_MESSAGE),
+        HumanMessagePromptTemplate.from_template(HUMAN_MESSAGE),
     ])
     
     chain = prompt | llm

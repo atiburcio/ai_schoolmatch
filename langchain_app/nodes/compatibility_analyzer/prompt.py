@@ -1,4 +1,4 @@
-SYSTEM_TEMPLATE = """Analyze the compatibility between the target institution and potential partners.
+SYSTEM_MESSAGE = """Analyze the compatibility between the target institution and potential partners.
     Consider these factors in order of importance:
 
     1. Strategic Fit (40% weight):
@@ -28,4 +28,4 @@ SYSTEM_TEMPLATE = """Analyze the compatibility between the target institution an
     3. Potential Challenges
     4. Risk Factors
     """
-HUMAN_TEMPLATE = """Target Features: {features}\nPotential Partner: {partner_description}"""
+HUMAN_MESSAGE = """Target Features: {features}\nPotential Partner: {partner_description}"""

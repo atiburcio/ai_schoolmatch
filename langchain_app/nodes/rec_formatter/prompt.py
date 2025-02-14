@@ -1,3 +1,6 @@
+from langchain_app.nodes.final_rec.prompt import HUMAN_MESSAGE
+
+
 SYSTEM_MESSAGE = """Based on the compatibility analyses, create a detailed M&A recommendation report.
     For each potential partner, include:
 
