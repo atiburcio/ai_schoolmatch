@@ -1,3 +1,5 @@
+import os
+
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
@@ -6,18 +8,12 @@ from langchain_app.nodes.extract_target_features.base import create_feature_extr
 from langchain_app.nodes.compatibility_analyzer.base import create_compatibility_analyzer
 from langchain_app.nodes.rec_formatter.base import create_recommendation_formatter
 from langchain_app.nodes.final_rec.base import create_final_recommender
+
 from db.college_vector_store import CollegeVectorStore
-import os
+from models.state import State
+
 from dotenv import load_dotenv
 
-class State(TypedDict):
-    """State definition for the school matcher graph"""
-    messages: Annotated[List, add_messages]
-    school: str
-    features: str
-    compatibility_analyses: List[dict]
-    recommendations: str
-    final_recommendation: str
 
 def create_school_matcher_graph(vector_store: CollegeVectorStore):
     """Creates the school matcher graph with all necessary nodes"""

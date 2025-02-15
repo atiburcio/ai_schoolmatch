@@ -1,7 +1,9 @@
 
 from typing import Callable
 
-from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
+from langchain.prompts.chat import (
+    ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
+)
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
 from langchain_app.nodes.extract_target_features.prompt import HUMAN_MESSAGE, SYSTEM_MESSAGE
