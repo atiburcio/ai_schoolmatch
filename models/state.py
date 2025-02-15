@@ -1,9 +1,10 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from langgraph.graph.message import add_messages
-from langgraph.graph.node import START, END
+from langgraph.graph import START, END
+from models import CompatibilityAnalysis
 
 
 class NodeName(str, Enum):
@@ -19,6 +20,17 @@ class State(BaseModel):
     messages: Annotated[list, add_messages]
     school: str
     features: str
-    compatibility_analyses: list[dict]
+    compatibility_analyses: list[CompatibilityAnalysis]
     recommendations: str
     final_recommendation: str
+
+class HumanFeedbackSeparation(BaseModel):
+    """Contains the human feedback for one task.
+    
+    Set feedback to None if no feedback was provided.
+    """
+    feedback: Optional[str] = Field(..., description="Human feedback for one task")
+
+    @property
+    def has_feedback(self):
+        return any([self.feedback])
