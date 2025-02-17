@@ -1,158 +1,135 @@
-from typing import Literal
-from langchain_openai import ChatOpenAI
-from typing_extensions import Callable
-
+import os
+from typing import Literal, Callable
 from langgraph.types import Command, interrupt
 from pydantic import BaseModel
-from langchain_core.messages import AIMessage
-from langchain_core.runnables import RunnableSequence
-
-from models.state import State
-from models.state import NodeName
+from models.state import State, NodeName
 from langchain_app.utils.human_feedback import (
-    create_human_feedback_message_list, HUMAN_FEEDBACK_INPUT_MSG, EMPTY_INPUT_MSG
+    create_human_feedback_message_list,
+    HUMAN_FEEDBACK_INPUT_MSG,
+    EMPTY_INPUT_MSG,
 )
-from models.state import HumanFeedbackSeparation
 
 
 def create_human_feedback_node(
 ) -> Callable[[State], Command[Literal[NodeName.FINAL_RECOMMENDER, NodeName.END]]]:
-    """Creates a node that prompts the user for feedback on the final recommendation.
-    
+    """
+    Creates a node that prompts the user for feedback on the final recommendation.
+
     Returns:
-        Callable that takes a State and returns a Command with a Literal[NodeName.FINAL_RECOMMENDER, NodeName.END]
+        Callable: A function that takes a State and returns a Command 
+                  with a Literal indicating the next node name.
     """
 
     human_feedback_func = create_get_human_feedback(
-        messages_primary_key = "final_recommendation",
-        messages_node_one_key = "final_recommendation_with_feedback",
-        node_one_name = NodeName.FINAL_RECOMMENDER,
-        node_no_feedback_name = NodeName.END,
+        messages_primary_key="messages",
+        node_one_name=NodeName.FINAL_RECOMMENDER,
+        node_no_feedback_name=NodeName.END,
     )
 
-    def human_feedback_wrapper(state: State
+    def human_feedback_wrapper(
+        state: State
     ) -> Command[Literal[NodeName.FINAL_RECOMMENDER, NodeName.END]]:
-        """Wrapper for human feedback node."""
+        """
+        Wrapper for human feedback node.
+
+        Args:
+            state (State): The current state.
+
+        Returns:
+            Command: The command to transition to the next node.
+        """
         return human_feedback_func(state)
-    
+
     return human_feedback_wrapper
 
-# TODO: later, if we need to separate humand feedback to more than one node, we do that here.
+
 def create_get_human_feedback(
     messages_primary_key: str,
-    messages_node_one_key: str,
-    node_one_name: str,
-    node_no_feedback_name: str,
+    node_one_name: NodeName,
+    node_no_feedback_name: NodeName,
 ) -> Callable[[BaseModel], Command]:
-    """Creates a function that gets human feedback on the final recommendation.
-    , updates the state accordingly and goes to the next node.
-    
+    """
+    Creates a function that gets human feedback on the final recommendation,
+    updates the state accordingly, and determines the next node.
+
     Args:
-        messages_primary_key: Primary key for the messages list in the state
-        node_one_name: Name of the node to go to if the user provides feedback
-        node_no_feedback_name: Name of the node to go to if the user does not provide feedback
-    
+        messages_primary_key (str): Primary key for the messages list in the state.
+        node_one_name (NodeName): Name of the node to go to if the user provides feedback.
+        node_no_feedback_name (NodeName): Name of the node to go to if the user does not provide feedback.
+
     Returns:
-        Callable that takes a State and returns a Command
+        Callable: A function that takes a BaseModel state and returns a Command.
     """
 
     def get_human_feedback(state: BaseModel) -> Command:
-        """Gets human feedback on the final recommendation.
-        
+        """
+        Gets human feedback on the final recommendation.
+
         Args:
-            state: State with the final recommendation
+            state (BaseModel): State with the final recommendation.
+
+        Returns:
+            Command: The command to update state and transition to the next node.
         """
         human_feedback_text = interrupt(HUMAN_FEEDBACK_INPUT_MSG)
         if human_feedback_text == EMPTY_INPUT_MSG:
             return _get_command_for_no_feedback(node_no_feedback_name)
 
-        human_feedback_separation = _separate_human_feedback(
-            state,
+        updated_state = _get_updated_state(
             human_feedback_text,
             messages_primary_key,
-            messages_node_one_key
         )
-        if not human_feedback_separation.has_feedback:
-            return _get_command_for_no_feedback(node_no_feedback_name)
-
-        updated_state = _get_updated_state(
-            human_feedback_text, 
-            human_feedback_separation,
-            messages_primary_key,
-            messages_node_one_key
-        )
-
         next_node_name = _get_next_node_name(
-            human_feedback_separation,
             node_one_name,
         )
-
         return Command(update=updated_state, goto=next_node_name)
-    
+
     return get_human_feedback
 
-def _separate_human_feedback(
-    state: State,
-    human_feedback_text: str,
-    messages_primary_key:str,
-    messages_node_one_key: str
-) -> HumanFeedbackSeparation:
-    past_human_feedback_texts = "\n".join(
-        msg.content for msg in getattr(state, messages_primary_key) if isinstance(msg, HumanMessage)
-    )
 
-    separator_runnable = _create_human_feedback_separator_runnable()
-    last_message_from_one: AIMessage = getattr(state, messages_node_one_key)[-1]
-    human_feedback_separation = separator_runnable.invoke({
-        "past_human_feedback_texts": past_human_feedback_texts,
-        "last_message_from_one": last_message_from_one.content,
-        "human_feedback_text": human_feedback_text,
-    },
-    {"run_name": "Human Feedback Separator"},
-    )
+def _get_command_for_no_feedback(node_no_feedback_name: NodeName) -> Command:
+    """
+    Creates a command to transition to the 'no feedback' node.
 
-    return human_feedback_separation
+    Args:
+        node_no_feedback_name (NodeName): The node to transition to if no feedback is provided.
 
-
-def _create_human_feedback_separator_runnable() -> RunnableSequence:
-    prompt = ChatPromptTemplate.from_messages([
-        SystemMessagePromptTemplate.from_template(SYSTEM_MESSAGE),
-        HumanMessagePromptTemplate.from_template(HUMAN_MESSAGE),
-    ])
-    llm = ChatOpenAI(
-        model="gpt-3.5-turbo",
-        temperature=0,
-        api_key=os.getenv("OPENAI_API_KEY")
-    )
-    llm_structured_output = llm.with_structured_output(HumanFeedbackSeparation)
-
-    return prompt | llm_structured_output
-
-
-def _get_command_for_no_feedback(node_no_feedback_name: str) -> Command:
+    Returns:
+        Command: The command to transition to the 'no feedback' node.
+    """
     return Command(goto=node_no_feedback_name)
 
 
 def _get_updated_state(
-    human_feedback_text: str, 
-    human_feedback_separation: HumanFeedbackSeparation,
-    messages_primary_key:str,
-    messages_node_one_key: str
+    human_feedback_text: str,
+    messages_primary_key: str,
 ) -> dict:
+    """
+    Updates the state with the human feedback.
+
+    Args:
+        human_feedback_text (str): The feedback text provided by the user.
+        messages_primary_key (str): The key for storing messages in the state.
+
+    Returns:
+        dict: A dictionary representing the updated state.
+    """
     messages_for_primary_key = create_human_feedback_message_list(human_feedback_text)
-    messages_for_node_one_key = create_human_feedback_message_list(
-        human_feedback_separation.feedback
-    )
     return {
         messages_primary_key: messages_for_primary_key,
-        messages_node_one_key: messages_for_node_one_key
     }
 
 
 def _get_next_node_name(
-    human_feedback_separation: HumanFeedbackSeparation,
-    node_one_name: str,
-) -> str:
-    if human_feedback_separation.feedback:
-        return node_one_name
-    raise ValueError("Human feedback was not provided")
+    node_one_name: NodeName,
+) -> NodeName:
+    """
+    Determines the next node name to navigate to.
+
+    Args:
+        node_one_name (NodeName): The node to transition to if feedback is provided.
+
+    Returns:
+        NodeName: The next node name.
+    """
+    return node_one_name

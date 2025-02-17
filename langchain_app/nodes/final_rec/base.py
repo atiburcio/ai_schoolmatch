@@ -1,4 +1,3 @@
-
 from typing import Callable
 
 from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
@@ -6,18 +5,18 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
 from langchain_app.nodes.final_rec.prompt import HUMAN_MESSAGE, SYSTEM_MESSAGE
 
-from models import AnalysisState
+from models.state import State
 
 
 
-def create_final_recommender(llm: ChatOpenAI) -> Callable[[AnalysisState], AnalysisState]:
+def create_final_recommender(llm: ChatOpenAI) -> Callable[[State], State]:
     """Creates a node that makes the final recommendation.
     
     Args:
         llm: Language model for final recommendation
         
     Returns:
-        Callable that takes an AnalysisState and returns updated state with final recommendation
+        Callable that takes a State and returns updated state with final recommendation
     """
 
     prompt = ChatPromptTemplate.from_messages([
@@ -27,14 +26,14 @@ def create_final_recommender(llm: ChatOpenAI) -> Callable[[AnalysisState], Analy
     
     chain = prompt | llm
     
-    def final_recommender(state: AnalysisState) -> AnalysisState:
+    def final_recommender(state: State) -> State:
         """Generate final recommendation based on all analyses."""
         try:
             response: AIMessage = chain.invoke({
                 "recommendations": state.recommendations,
                 "run_name": "Final Recommendation"
             })
-            return AnalysisState(
+            return State(
                 school=state.school,
                 features=state.features,
                 compatibility_analyses=state.compatibility_analyses,
@@ -43,7 +42,7 @@ def create_final_recommender(llm: ChatOpenAI) -> Callable[[AnalysisState], Analy
             )
         except Exception as e:
             print(f"Error in final recommender: {str(e)}")
-            return AnalysisState(
+            return State(
                 school=state.school,
                 features=state.features,
                 compatibility_analyses=state.compatibility_analyses,

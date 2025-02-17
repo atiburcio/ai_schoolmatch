@@ -1,4 +1,3 @@
-
 from typing import Callable
 
 from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
@@ -6,7 +5,8 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
 from langchain_app.nodes.compatibility_analyzer.prompt import HUMAN_MESSAGE, SYSTEM_MESSAGE
 
-from models import AnalysisState, CompatibilityAnalysis
+from models.state import State
+from models.analysis_state import CompatibilityAnalysis
 from db.college_vector_store import CollegeVectorStore
 from models.constants import SECTOR_MAP, PROGRAM_LEVELS
 
@@ -38,7 +38,7 @@ Additional Information:
 """
 
 
-def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpenAI) -> Callable[[AnalysisState], AnalysisState]:
+def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpenAI) -> Callable[[State], State]:
     """Creates a node that analyzes compatibility between institutions.
     
     Args:
@@ -56,7 +56,7 @@ def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpe
     
     chain = prompt | llm
     
-    def compatibility_analyzer(state: AnalysisState) -> AnalysisState:
+    def compatibility_analyzer(state: State) -> State:
         """Analyze compatibility with potential partner institutions."""
         try:
             if not state.features:
@@ -90,29 +90,31 @@ def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpe
                     school=match['metadata'].get('INSTNM', 'Unknown Institution'),
                     location=f"{match['metadata'].get('CITY', 'N/A')}, {match['metadata'].get('STABBR', 'N/A')}",
                     analysis=response.content,
-                    similarity_score=1.0 - match['distance']
+                    similarity_score=1.0 - match['distance']  # Convert distance to similarity
                 ))
                 
-                # Stop once we have x unique institutions
+                # Only keep top 10 matches
                 if len(compatibility_analyses) == 10:
                     break
             
-            return AnalysisState(
+            return State(
                 school=state.school,
                 features=state.features,
                 compatibility_analyses=compatibility_analyses,
                 recommendations=state.recommendations,
-                final_recommendation=state.final_recommendation
+                final_recommendation=state.final_recommendation,
+                messages=state.messages + [response]  # Add new message while preserving existing ones
             )
             
         except Exception as e:
             print(f"Error in compatibility analyzer: {str(e)}")
-            return AnalysisState(
+            return State(
                 school=state.school,
                 features=state.features,
                 compatibility_analyses=[],
-                recommendations=state.recommendations,
-                final_recommendation=state.final_recommendation
+                recommendations="",
+                final_recommendation="",
+                messages=state.messages  # Preserve existing messages
             )
     
     return compatibility_analyzer

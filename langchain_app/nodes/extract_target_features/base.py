@@ -1,4 +1,3 @@
-
 from typing import Callable
 
 from langchain.prompts.chat import (
@@ -8,9 +7,9 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
 from langchain_app.nodes.extract_target_features.prompt import HUMAN_MESSAGE, SYSTEM_MESSAGE
 
-from models import AnalysisState
-
-def create_feature_extractor(llm: ChatOpenAI) -> Callable[[AnalysisState], AnalysisState]:
+from models.state import State
+ 
+def create_feature_extractor(llm: ChatOpenAI) -> Callable[[State], State]:
     """Creates a node that extracts M&A-relevant features from the target institution.
     
     Args:
@@ -26,22 +25,26 @@ def create_feature_extractor(llm: ChatOpenAI) -> Callable[[AnalysisState], Analy
     
     chain = prompt | llm
     
-    def feature_extractor(state: AnalysisState) -> AnalysisState:
+    def feature_extractor(state: State) -> State:
         """Extract features from the school description."""
         try:
             response: AIMessage = chain.invoke({
                 "school": state.school,
                 "run_name": "Feature Extraction"
             })
-            return AnalysisState(
+            return State(
                 school=state.school,
                 features=response.content,
                 compatibility_analyses=[],
                 recommendations="",
-                final_recommendation=""
+                final_recommendation="",
+                messages=state.messages + [response]  # Preserve existing messages and add new one
             )
         except Exception as e:
             print(f"Error in feature extractor: {str(e)}")
-            return AnalysisState(school=state.school)
+            return State(
+                school=state.school,
+                messages=state.messages  # Preserve existing messages
+            )
     
     return feature_extractor
