@@ -4,24 +4,29 @@ An intelligent college merger analysis system built with LangGraph and LangChain
 
 ## Features
 
-- Comprehensive merger analysis including:
+- Comprehensive merger analysis pipeline:
+  - Feature extraction from target institution
+  - Compatibility analysis with potential partners
+  - Recommendation formatting
+  - Final recommendation with human feedback loop
+- Detailed compatibility analysis including:
   - Strategic fit assessment (40%)
   - Cultural alignment evaluation (30%)
   - Operational feasibility analysis (30%)
-- Detailed compatibility scoring for potential partners
+- Vector-based college matching using ChromaDB
+- Interactive human feedback system
 - Structured recommendations with:
   - Key synergies identification
   - Risk assessment
-  - Financial impact analysis
-- LangGraph workflow for systematic analysis
-- Vector database for efficient college data storage and retrieval
+  - Potential challenges
+  - Compatibility scores
 
 ## Setup
 
 1. Create a virtual environment:
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python -m venv env
+source env/bin/activate  # On Windows: env\Scripts\activate
 ```
 
 2. Install dependencies:
@@ -37,74 +42,46 @@ OPENAI_API_KEY=your_openai_api_key
 
 ## Project Structure
 
-- `langchain_app/`: Core analysis engine and LangGraph workflow
-  - `merger_analyzer.py`: Compatibility analysis logic
-  - `school_matcher_graph.py`: LangGraph workflow definition
-  - `school_matcher.py`: College matching logic
-- `models/`: Data models for college information
-- `db/`: Vector database operations and college data
-- `scripts/`: Utility scripts for database operations
-- `chroma_db/`: Vector database storage (not tracked in git)
+- `langchain_app/`: Core application logic
+  - `nodes/`: LangGraph node implementations
+    - `compatibility_analyzer/`: Analyzes compatibility between institutions
+    - `extract_target_features/`: Extracts relevant features from target institution
+    - `final_rec/`: Generates final recommendation
+    - `human_feedback/`: Handles human feedback loop
+    - `rec_formatter/`: Formats recommendations
+  - `school_matcher_graph.py`: Main LangGraph workflow definition
+  - `utils/`: Utility functions and helpers
+- `models/`: Data models and state definitions
+  - `state.py`: Core state model and node names
+  - `analysis_state.py`: Analysis-specific models
+- `db/`: Database operations
+  - `college_vector_store.py`: ChromaDB vector store operations
+- `notebooks/`: Jupyter notebooks for demos and testing
+  - `school_matcher_demo.ipynb`: Main demo notebook
 
-## Running the Analysis
+## Usage
 
-### Using the Jupyter Notebook
+### Using the Demo Notebook
 
-1. Start Jupyter:
-```bash
-jupyter notebook
-```
+1. Open `school_matcher_demo.ipynb`
+2. Run all cells to initialize the graph and components
+3. Input a target institution name
+4. Review the analysis results and provide feedback when prompted
 
-2. Open `school_matcher_demo.ipynb`
+The system will:
+1. Extract key features from the target institution
+2. Find and analyze potential partner institutions
+3. Generate formatted recommendations
+4. Provide a final recommendation
+5. Allow for human feedback to refine the recommendation
 
-3. Run all cells in sequence. The notebook will:
-   - Initialize the LangGraph workflow
-   - Load the college vector database
-   - Analyze compatibility with potential partners
-   - Generate a detailed recommendation
+## Contributing
 
-Example usage in the notebook:
-```python
-result = run_school_matcher(graph, "Your University Name")
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
-# Print analyses
-for analysis in result["compatibility_analyses"]:
-    print(analysis)
+## License
 
-# Print final recommendation
-print("\nFinal Recommendation:")
-print(result["final_recommendation"])
-```
-
-### Using the Python API
-
-```python
-from langchain_app.school_matcher import create_school_matcher_graph
-from db.college_vector_store import CollegeVectorStore
-
-# Initialize components
-vector_store = CollegeVectorStore()
-graph = create_school_matcher_graph(vector_store)
-
-# Run analysis
-result = graph.run({
-    "messages": [{"role": "user", "content": "Your University Name"}]
-})
-```
-
-## Data Storage
-
-The system uses a ChromaDB vector database to store college information. The database files are not tracked in git due to size constraints. To set up the database:
-
-1. Run the database population script:
-```bash
-python scripts/access_to_vector_mac.py.py
-```
-
-2. The script will create the necessary database files in the `chroma_db/` directory
-
-## Notes
-
-- The system currently uses the GPT-3.5-turbo model for analysis
-- Make sure your OpenAI API key has sufficient credits
-- Keep the `chroma_db/` directory in your `.gitignore` to avoid large file issues
+This project is licensed under the MIT License - see the LICENSE file for details.
