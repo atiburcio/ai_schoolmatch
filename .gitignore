@@ -37,4 +37,4 @@ chroma_db/
 # Jupyter Notebook
 .ipynb
 .ipynb_checkpoints
-scratch.ipynb
+scratch*

@@ -1,7 +1,8 @@
-import os
 from typing import Literal, Callable
+
 from langgraph.types import Command, interrupt
 from pydantic import BaseModel
+
 from models.state import State, NodeName
 from langchain_app.utils.human_feedback import (
     create_human_feedback_message_list,
@@ -45,8 +46,8 @@ def create_human_feedback_node(
 
 def create_get_human_feedback(
     messages_primary_key: str,
-    node_one_name: NodeName,
-    node_no_feedback_name: NodeName,
+    node_one_name: str,
+    node_no_feedback_name: str,
 ) -> Callable[[BaseModel], Command]:
     """
     Creates a function that gets human feedback on the final recommendation,

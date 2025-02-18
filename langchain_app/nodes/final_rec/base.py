@@ -38,7 +38,8 @@ def create_final_recommender(llm: ChatOpenAI) -> Callable[[State], State]:
                 features=state.features,
                 compatibility_analyses=state.compatibility_analyses,
                 recommendations=state.recommendations,
-                final_recommendation=response.content
+                final_recommendation=response.content,
+                messages=state.messages + [response]
             )
         except Exception as e:
             print(f"Error in final recommender: {str(e)}")

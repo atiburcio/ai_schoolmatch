@@ -1,4 +1,5 @@
-SYSTEM_MESSAGE = """You are an expert investment banker who specializes in merger and acquisition (M&A) decisions. Given the following compatibility analyses and recommendations, provide a final recommendation for the merger.
+SYSTEM_MESSAGE = """You are an expert investment banker who specializes in merger and acquisition (M&A) decisions. 
+Given the following compatibility analyses and recommendations, provide a final recommendation for the merger.
     
     {recommendations}
     

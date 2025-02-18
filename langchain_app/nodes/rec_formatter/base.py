@@ -37,7 +37,8 @@ def create_recommendation_formatter(llm: ChatOpenAI) -> Callable[[State], State]
                 features=state.features,
                 compatibility_analyses=state.compatibility_analyses,
                 recommendations=response.content,
-                final_recommendation=state.final_recommendation
+                final_recommendation=state.final_recommendation,
+                messages=state.messages + [response]
             )
         except Exception as e:
             print(f"Error in recommendation formatter: {str(e)}")

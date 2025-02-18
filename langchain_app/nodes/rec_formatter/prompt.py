@@ -24,6 +24,15 @@ SYSTEM_MESSAGE = """Based on the compatibility analyses, create a detailed M&A r
         - Key stakeholder considerations
         - Timeline recommendations
 
+    You will receive a list of compatibility analyses. Each analysis contains:
+    - school: The name of the potential partner institution
+    - location: The city and state of the institution
+    - analysis: Detailed compatibility analysis
+    - similarity_score: A score from 0 to 1 indicating similarity
+
+    Create a section for EACH school in the analyses, ordered by similarity score in descending order.
+    Use the school name as the section header.
+
     Analyses: {compatibility_analyses}
 
     Format the report in a clear, professional style suitable for investment banking presentation."""

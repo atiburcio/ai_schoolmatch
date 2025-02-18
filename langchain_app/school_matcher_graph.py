@@ -1,6 +1,5 @@
 import os
 from copy import deepcopy
-from typing import Annotated, TypedDict, List
 from time import sleep
 
 from dotenv import load_dotenv
@@ -52,9 +51,6 @@ def create_school_matcher_graph(vector_store: CollegeVectorStore):
     
     # Set the entry point
     graph_builder.set_entry_point(NodeName.FEATURE_EXTRACTOR)
-
-    # create graph config
-
     
     # Compile the graph
     return graph_builder.compile(checkpointer=MemorySaver())
@@ -67,7 +63,6 @@ def run_school_matcher(graph: CompiledStateGraph, school_description: str, confi
 
     #TODO: add callbacks here to handle langsmith tracing here rather in the notebook
     graph.invoke({"messages": [], "school": school_description}, config=config)
-
 
     while graph.get_state(config).next:
 

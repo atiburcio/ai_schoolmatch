@@ -4,7 +4,6 @@ Analysis State Models
 This module contains Pydantic models for managing the state of merger analysis pipelines.
 """
 
-from typing import Dict, List, Any, Optional
 from pydantic import BaseModel, Field
 
 
@@ -20,7 +19,7 @@ class AnalysisState(BaseModel):
     """Model for managing the state of the merger analysis pipeline."""
     school: str = Field(description="Name of the target institution")
     features: str = Field(default="", description="Extracted M&A-relevant features")
-    compatibility_analyses: List[CompatibilityAnalysis] = Field(
+    compatibility_analyses: list[CompatibilityAnalysis] = Field(
         default_factory=list,
         description="List of compatibility analyses with potential partners"
     )
