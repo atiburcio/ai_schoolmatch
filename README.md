@@ -38,14 +38,6 @@ SchoolMatch AI uses advanced language models and semantic search to analyze pote
 ## Architecture
 ![SchoolMatch AI Architecture](data/schoolmatch_graph.png)
 
-The system uses a LangGraph-based workflow with the following components:
-
-- **Feature Extractor**: Processes input institution details
-- **Compatibility Analyzer**: Evaluates potential partners using vector search
-- **Recommendation Formatter**: Structures detailed analyses
-- **Final Recommender**: Generates comprehensive M&A recommendations
-- **Human Feedback**: Enables interactive refinement
-
 ## Technologies
 
 - LangChain: Framework for LLM application development
@@ -54,6 +46,18 @@ The system uses a LangGraph-based workflow with the following components:
 - Pydantic: For data validation and state management
 
 ## Setup
+
+### System Requirements
+
+1. Python 3.11
+2. Access Database Engine (required for reading .accdb files):
+   - Windows: Download and install [Microsoft Access Database Engine 2016](https://www.microsoft.com/en-us/download/details.aspx?id=54920)
+   - Mac: Install mdbtools:
+     ```bash
+     brew install mdbtools
+     ```
+
+### Installation
 
 1. Create a virtual environment:
    ```bash
@@ -66,10 +70,57 @@ The system uses a LangGraph-based workflow with the following components:
    pip install -r requirements.txt
    ```
 
-3. Set up environment variables:
-   Create a `.env` file with:
+3. Download IPEDS Data:
+   - Visit the [IPEDS Data Center](https://nces.ed.gov/ipeds/use-the-data/download-access-database)
+   - Download the latest Access Database (.accdb file) 2023-2024
+   - Create an `ipeds_data` directory in the project root IF it does not exist:
+     ```bash
+     mkdir ipeds_data
+     ```
+   - Place the downloaded .accdb file in the `ipeds_data` directory
+
+4. Set up environment variables:
+   Create a `.env` file in the project root with:
    ```
    OPENAI_API_KEY=your_api_key_here
+   LANGCHAIN_TRACING_V2=true
+   LANGCHAIN_ENDPOINT=https://api.smith.langchain.com
+  LANGCHAIN_PROJECT=schoolmatch
+   ```
+
+5. Initialize the Vector Store:
+   ```bash
+   # This script will process the IPEDS data and create the ChromaDB vector store
+   python scripts/access_to_vector_mac.py
+   ```
+
+6. Verify the setup:
+   ```bash
+   # Test the vector store with a sample query
+   python scripts/test_vector_store.py
+   ```
+
+The system will create a `chroma_db` directory to store the vector embeddings. This only needs to be done once unless you want to update the IPEDS data.
+
+### Troubleshooting
+
+If you encounter any issues:
+1. Ensure the IPEDS .accdb file is in the correct location
+2. Check that your OpenAI API key is valid
+3. Make sure all dependencies are installed
+4. Verify the `chroma_db` directory was created successfully
+5. For Access Database issues:
+   - Windows: Make sure both 32-bit and 64-bit versions of the Access Database Engine are installed
+   - Mac: Verify mdbtools is installed correctly: `brew info mdbtools`
+
+### Data Updates
+
+To update the college data:
+1. Download a new IPEDS Access Database
+2. Replace the existing .accdb file in `ipeds_data`
+3. Run the initialization script again:
+   ```bash
+   python scripts/access_to_vector_mac.py
    ```
 
 ## Usage

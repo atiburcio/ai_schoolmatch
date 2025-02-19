@@ -31,10 +31,31 @@ wheels/
 chroma_db/
 *.sqlite3
 
-# OS files
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
 
 # Jupyter Notebook
 .ipynb
 .ipynb_checkpoints
 scratch*
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# mypy
+.mypy_cache/
+
+# pytest
+.pytest_cache/

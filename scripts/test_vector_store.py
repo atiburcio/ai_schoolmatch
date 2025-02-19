@@ -10,7 +10,7 @@ def main():
     
     # Test query for a well-known university to verify IPEDS data
     test_query = "Find universities similar to Harvard University"
-    results = vector_store.find_similar_colleges(test_query, n_results=3)
+    results = vector_store.find_similar_colleges(test_query, n_results=10)
     
     print("\nQuerying for:", test_query)
     print("\nResults from vector store:")
