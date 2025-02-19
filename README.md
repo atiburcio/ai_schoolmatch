@@ -21,6 +21,9 @@ An intelligent college merger analysis system built with LangGraph and LangChain
   - Potential challenges
   - Compatibility scores
 
+## Architecture
+![SchoolMatch AI Architecture](schoolmatch_v1/data/schoolmatch_graph.png)
+
 ## Setup
 
 1. Create a virtual environment:
