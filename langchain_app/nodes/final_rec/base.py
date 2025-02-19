@@ -4,9 +4,9 @@ from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTempla
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
 from langchain_app.nodes.final_rec.prompt import HUMAN_MESSAGE, SYSTEM_MESSAGE
+from langchain_app.utils.human_feedback import extract_feedback_history
 
 from models.state import State
-
 
 
 def create_final_recommender(llm: ChatOpenAI) -> Callable[[State], State]:
@@ -27,10 +27,11 @@ def create_final_recommender(llm: ChatOpenAI) -> Callable[[State], State]:
     chain = prompt | llm
     
     def final_recommender(state: State) -> State:
-        """Generate final recommendation based on all analyses."""
+        """Generate final recommendation based on all analyses and feedback history."""
         try:
             response: AIMessage = chain.invoke({
                 "recommendations": state.recommendations,
+                "human_feedback": extract_feedback_history(state.messages),
                 "run_name": "Final Recommendation"
             })
             return State(

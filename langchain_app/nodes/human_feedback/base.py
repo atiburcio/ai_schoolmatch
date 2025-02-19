@@ -79,6 +79,7 @@ def create_get_human_feedback(
         updated_state = _get_updated_state(
             human_feedback_text,
             messages_primary_key,
+            state,
         )
         next_node_name = _get_next_node_name(
             node_one_name,
@@ -104,6 +105,7 @@ def _get_command_for_no_feedback(node_no_feedback_name: NodeName) -> Command:
 def _get_updated_state(
     human_feedback_text: str,
     messages_primary_key: str,
+    state: BaseModel
 ) -> dict:
     """
     Updates the state with the human feedback.
@@ -111,13 +113,15 @@ def _get_updated_state(
     Args:
         human_feedback_text (str): The feedback text provided by the user.
         messages_primary_key (str): The key for storing messages in the state.
+        state (BaseModel): The current state containing existing messages.
 
     Returns:
         dict: A dictionary representing the updated state.
     """
-    messages_for_primary_key = create_human_feedback_message_list(human_feedback_text)
+    new_messages = create_human_feedback_message_list(human_feedback_text)
+    existing_messages = getattr(state, messages_primary_key, [])
     return {
-        messages_primary_key: messages_for_primary_key,
+        messages_primary_key: existing_messages + new_messages,
     }
 
 
