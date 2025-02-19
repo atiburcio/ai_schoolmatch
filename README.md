@@ -85,7 +85,7 @@ SchoolMatch AI uses advanced language models and semantic search to analyze pote
    OPENAI_API_KEY=your_api_key_here
    LANGCHAIN_TRACING_V2=true
    LANGCHAIN_ENDPOINT=https://api.smith.langchain.com
-  LANGCHAIN_PROJECT=schoolmatch
+   LANGCHAIN_PROJECT=schoolmatch
    ```
 
 5. Initialize the Vector Store:
