@@ -22,7 +22,7 @@ An intelligent college merger analysis system built with LangGraph and LangChain
   - Compatibility scores
 
 ## Architecture
-![SchoolMatch AI Architecture](schoolmatch_v1/data/schoolmatch_graph.png)
+![SchoolMatch AI Architecture](data/schoolmatch_graph.png)
 
 ## Setup
 
