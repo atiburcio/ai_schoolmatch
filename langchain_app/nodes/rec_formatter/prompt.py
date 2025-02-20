@@ -35,6 +35,9 @@ SYSTEM_MESSAGE = """Based on the compatibility analyses, create a detailed M&A r
 
     Analyses: {compatibility_analyses}
 
-    Format the report in a clear, professional style suitable for investment banking presentation."""
+    Format the report in a clear, professional style suitable for investment banking presentation.
+    Provide as much information as possible, using the data provided in the analyses.
+    A managing director will be reviewing the report who is an expert in the field. 
+    """
 
 HUMAN_MESSAGE = """{compatibility_analyses}"""
