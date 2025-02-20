@@ -18,6 +18,7 @@ Given the following compatibility analyses, recommendations, and feedback histor
     - Analysis of strategic fit
     - Cultural alignment assessment
     - Operational synergies
+    - Financial synergies
     
     3. Risk Assessment
     - Key risks identified
@@ -30,6 +31,7 @@ Given the following compatibility analyses, recommendations, and feedback histor
     
     5. Financial Considerations
     - Potential synergies and cost savings
+    - Cost of tuition and fees and differences
     - Investment requirements
     - Expected ROI timeline
     

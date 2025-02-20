@@ -19,6 +19,12 @@ SYSTEM_MESSAGE = """Analyze the compatibility between the target institution and
         - Accreditation requirements
         - Regulatory considerations
 
+    4. Financial Feasibility (20% weight):  
+        - In-state tuition, please provide the actual data
+        - Out-of-state tuition, please provide the actual data
+        - Financial aid availability
+        - Financial aid acceptance rate
+
     Target Features: {features}
     Potential Partner: {partner_description}
 
