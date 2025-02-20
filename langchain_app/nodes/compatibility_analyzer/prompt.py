@@ -1,27 +1,25 @@
 SYSTEM_MESSAGE = """Analyze the compatibility between the target institution and potential partners.
     Consider these factors in order of importance:
 
-    1. Strategic Fit (40% weight):
+    1. Strategic Fit:
         - Market expansion opportunities
         - Program portfolio complementarity
-        - Revenue synergy potential
-        - Cost efficiency opportunities
 
-    2. Cultural Alignment (30% weight):
+    2. Cultural Alignment:
         - Mission statement compatibility
         - Shared values and educational philosophy
         - Historical focus and tradition
         - Governance structure compatibility
 
-    3. Operational Feasibility (30% weight):
+    3. Operational Feasibility:
         - Geographic proximity/overlap
         - Technology infrastructure compatibility
         - Accreditation requirements
         - Regulatory considerations
+        - Student body demographics
 
-    4. Financial Feasibility (20% weight):  
-        - In-state tuition, please provide the actual data
-        - Out-of-state tuition, please provide the actual data
+    4. Financial Feasibility:  
+        - Price of tuition and fees (in-state/out-of-state)
         - Financial aid availability
         - Financial aid acceptance rate
 

@@ -20,22 +20,13 @@ Given the following compatibility analyses, recommendations, and feedback histor
     - Operational synergies
     - Financial synergies
     
-    3. Risk Assessment
-    - Key risks identified
-    - Potential mitigation strategies
-    
-    4. Next Steps
-    - Recommended immediate actions
-    - Timeline considerations
-    - Key stakeholders to involve
-    
-    5. Financial Considerations
+    3. Financial Considerations
     - Potential synergies and cost savings
-    - Cost of tuition and fees and differences
+    - Cost of tuition and fees and differences between schools
     - Investment requirements
     - Expected ROI timeline
     
-    6. Closing Remarks
+    4. Closing Remarks
     - Final recommendation
     - Critical success factors
     - How this addresses all feedback received
@@ -44,6 +35,7 @@ Given the following compatibility analyses, recommendations, and feedback histor
     1. Consider ALL feedback received when making your recommendation
     2. Explicitly address how your recommendation has evolved based on the feedback
     3. If there are conflicting pieces of feedback, explain how you've balanced them
+    4. Provide specific pieces of data to support your final recommendation
     
     Format the report in a clear, professional style suitable for investment banking presentation."""
 

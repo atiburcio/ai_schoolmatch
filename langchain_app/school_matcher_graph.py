@@ -26,7 +26,7 @@ def create_school_matcher_graph(vector_store: CollegeVectorStore):
     
     # Initialize the LLM
     llm = ChatOpenAI(
-        model="gpt-3.5-turbo",
+        model="gpt-4o",
         temperature=0,
         api_key=os.getenv("OPENAI_API_KEY")
     )
