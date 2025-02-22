@@ -30,15 +30,15 @@ def create_final_recommender(llm: ChatOpenAI) -> Callable[[State], State]:
         """Generate final recommendation based on all analyses and feedback history."""
         try:
             response: AIMessage = chain.invoke({
-                "recommendations": state.recommendations,
+                "ipeds_semantic_search": state.ipeds_semantic_search,
                 "human_feedback": extract_feedback_history(state.messages),
                 "run_name": "Final Recommendation"
             })
             return State(
                 school=state.school,
                 features=state.features,
-                compatibility_analyses=state.compatibility_analyses,
-                recommendations=state.recommendations,
+                ipeds_semantic_search=state.ipeds_semantic_search,
+                # recommendations=state.recommendations,
                 final_recommendation=response.content,
                 messages=state.messages + [response]
             )
@@ -47,8 +47,8 @@ def create_final_recommender(llm: ChatOpenAI) -> Callable[[State], State]:
             return State(
                 school=state.school,
                 features=state.features,
-                compatibility_analyses=state.compatibility_analyses,
-                recommendations=state.recommendations,
+                ipeds_semantic_search=state.ipeds_semantic_search,
+                # recommendations=state.recommendations,
                 final_recommendation=""
             )
     

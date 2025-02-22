@@ -4,13 +4,15 @@ from enum import Enum
 from pydantic import BaseModel, Field
 from langgraph.graph.message import add_messages
 from langgraph.graph import START, END
-from models import AnalysisState, CompatibilityAnalysis
+from models import AnalysisState, VectorDataBaseResults
 
 
 class NodeName(str, Enum):
     FINAL_RECOMMENDER = "final_recommender"
     FEATURE_EXTRACTOR = "feature_extractor"
-    COMPATIBILITY_ANALYZER = "compatibility_analyzer"
+    WEB_SEARCH = "web_search"
+    WIKIPEDIA_SEARCH = "wikipedia_search"
+    IPEDS_SEARCH = "ipeds_search"
     RECOMMENDATION_FORMATTER = "recommendation_formatter"
     HUMAN_FEEDBACK = "human_feedback"
     START = START
@@ -21,7 +23,7 @@ class State(BaseModel):
     messages: Annotated[list, add_messages] = []
     school: str
     features: str = ""
-    compatibility_analyses: list[CompatibilityAnalysis] = []
+    ipeds_semantic_search: list[VectorDataBaseResults] = []
     recommendations: str = ""
     final_recommendation: str = ""
 

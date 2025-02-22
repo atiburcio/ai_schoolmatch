@@ -3,10 +3,10 @@ from typing import Callable
 from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
-from langchain_app.nodes.compatibility_analyzer.prompt import HUMAN_MESSAGE, SYSTEM_MESSAGE
+from langchain_app.nodes.ipeds_semantic_search.prompt import HUMAN_MESSAGE, SYSTEM_MESSAGE
 
 from models.state import State
-from models.analysis_state import CompatibilityAnalysis
+from models.analysis_state import VectorDataBaseResults
 from db.college_vector_store import CollegeVectorStore
 from models.constants import SECTOR_MAP, PROGRAM_LEVELS
 
@@ -38,15 +38,15 @@ Additional Information:
 """
 
 
-def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpenAI) -> Callable[[State], State]:
-    """Creates a node that analyzes compatibility between institutions.
+def create_ipeds_semantic_search(vector_store: CollegeVectorStore, llm: ChatOpenAI) -> Callable[[State], State]:
+    """Creates a node that finds semantic similarity between institutions.
     
     Args:
         vector_store: Vector store containing college embeddings
-        llm: Language model for compatibility analysis
+        llm: Language model for semantic search analysis
         
     Returns:
-        Callable that takes an AnalysisState and returns updated state with compatibility analyses
+        Callable that takes an AnalysisState and returns updated state with semantic search results
     """
 
     prompt = ChatPromptTemplate.from_messages([
@@ -56,8 +56,8 @@ def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpe
     
     chain = prompt | llm
     
-    def compatibility_analyzer(state: State) -> State:
-        """Analyze compatibility with potential partner institutions."""
+    def ipeds_semantic_search(state: State) -> State:
+        """Returns semantically similar institutions to the target school."""
         try:
             if not state.features:
                 print("Error: No features found in state")
@@ -69,7 +69,7 @@ def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpe
                 print("No matches found in vector store")
                 return state
             
-            compatibility_analyses = []
+            ipeds_semantic_search = []
             target_school = state.school.lower().strip()
             
             for match in matches:
@@ -83,10 +83,10 @@ def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpe
                 response: AIMessage = chain.invoke({
                     "features": state.features,
                     "partner_description": partner_info,
-                    "run_name": "Compatibility Analysis",
+                    "run_name": "IPEDS Semantic Search Analysis",
                 })
                 
-                compatibility_analyses.append(CompatibilityAnalysis(
+                ipeds_semantic_search.append(VectorDataBaseResults(
                     school=match['metadata'].get('INSTNM', 'Unknown Institution'),
                     location=f"{match['metadata'].get('CITY', 'N/A')}, {match['metadata'].get('STABBR', 'N/A')}",
                     analysis=response.content,
@@ -94,27 +94,27 @@ def create_compatibility_analyzer(vector_store: CollegeVectorStore, llm: ChatOpe
                 ))
                 
                 # Only keep top 10 matches
-                if len(compatibility_analyses) == 10:
+                if len(ipeds_semantic_search) == 10:
                     break
             
             return State(
                 school=state.school,
                 features=state.features,
-                compatibility_analyses=compatibility_analyses,
+                ipeds_semantic_search=ipeds_semantic_search,
                 recommendations=state.recommendations,
                 final_recommendation=state.final_recommendation,
                 messages=state.messages + [response]  # Add new message while preserving existing ones
             )
             
         except Exception as e:
-            print(f"Error in compatibility analyzer: {str(e)}")
+            print(f"Error in IPEDS semantic search analyzer: {str(e)}")
             return State(
                 school=state.school,
                 features=state.features,
-                compatibility_analyses=[],
+                ipeds_semantic_search=[],
                 recommendations="",
                 final_recommendation="",
                 messages=state.messages  # Preserve existing messages
             )
     
-    return compatibility_analyzer
+    return ipeds_semantic_search

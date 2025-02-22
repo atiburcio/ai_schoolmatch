@@ -29,13 +29,13 @@ def create_recommendation_formatter(llm: ChatOpenAI) -> Callable[[State], State]
         """Format recommendations based on compatibility analyses."""
         try:
             response: AIMessage = chain.invoke({
-                "compatibility_analyses": str([analysis.model_dump() for analysis in state.compatibility_analyses]),
+                "ipeds_semantic_search": str([analysis.model_dump() for analysis in state.ipeds_semantic_search]),
                 "run_name": "Recommendation Formatting"
             })
             return State(
                 school=state.school,
                 features=state.features,
-                compatibility_analyses=state.compatibility_analyses,
+                ipeds_semantic_search=state.ipeds_semantic_search,
                 recommendations=response.content,
                 final_recommendation=state.final_recommendation,
                 messages=state.messages + [response]
@@ -45,7 +45,7 @@ def create_recommendation_formatter(llm: ChatOpenAI) -> Callable[[State], State]
             return State(
                 school=state.school,
                 features=state.features,
-                compatibility_analyses=state.compatibility_analyses,
+                ipeds_semantic_search=state.ipeds_semantic_search,
                 recommendations="",
                 final_recommendation=state.final_recommendation
             )

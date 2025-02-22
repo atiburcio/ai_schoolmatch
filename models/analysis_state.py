@@ -7,8 +7,8 @@ This module contains Pydantic models for managing the state of merger analysis p
 from pydantic import BaseModel, Field
 
 
-class CompatibilityAnalysis(BaseModel):
-    """Model for storing compatibility analysis results for a potential partner institution."""
+class VectorDataBaseResults(BaseModel):
+    """Model for storing IPEDS semantic search analysis results for a potential partner institution."""
     school: str = Field(description="Name of the potential partner institution")
     location: str = Field(description="City and state of the institution")
     analysis: str = Field(description="Detailed compatibility analysis")
@@ -19,9 +19,9 @@ class AnalysisState(BaseModel):
     """Model for managing the state of the merger analysis pipeline."""
     school: str = Field(description="Name of the target institution")
     features: str = Field(default="", description="Extracted M&A-relevant features")
-    compatibility_analyses: list[CompatibilityAnalysis] = Field(
+    ipeds_semantic_search: list[VectorDataBaseResults] = Field(
         default_factory=list,
         description="List of compatibility analyses with potential partners"
     )
-    recommendations: str = Field(default="", description="Formatted merger recommendations")
+    # recommendations: str = Field(default="", description="Formatted merger recommendations")
     final_recommendation: str = Field(default="", description="Final merger recommendation")

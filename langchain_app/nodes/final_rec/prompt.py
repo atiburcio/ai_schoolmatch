@@ -1,7 +1,7 @@
 SYSTEM_MESSAGE = """You are an expert investment banker who specializes in merger and acquisition (M&A) decisions. 
-Given the following compatibility analyses, recommendations, and feedback history, provide a final recommendation for the merger.
+Given the following compatibility analyses and feedback history, provide a final recommendation for the merger.
     
-    Recommendations: {recommendations}
+    Compatibility analysis: {ipeds_semantic_search}
     
     Feedback History (in chronological order):
     {human_feedback}
@@ -39,5 +39,5 @@ Given the following compatibility analyses, recommendations, and feedback histor
     
     Format the report in a clear, professional style suitable for investment banking presentation."""
 
-HUMAN_MESSAGE = """Recommendations: {recommendations}
+HUMAN_MESSAGE = """Compatibility analyses: {ipeds_semantic_search}
 Feedback History: {human_feedback}"""
