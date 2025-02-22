@@ -95,7 +95,6 @@ def create_web_search(llm: ChatOpenAI) -> Callable[[State], State]:
             # Generate search query based on current features
             query_response: AIMessage = query_chain.invoke({
                 "school": state.school,
-                "features": state.features,
                 "run_name": "Web Search Query Generation"
             })
             
