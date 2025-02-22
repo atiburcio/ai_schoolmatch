@@ -1,7 +1,7 @@
 from langchain_openai import ChatOpenAI
 from langchain_app.merger_analyzer import (
     create_feature_extractor,
-    create_compatibility_analyzer,
+    create_ipeds_semantic_search,
     create_recommendation_formatter,
     create_final_recommender
 )
@@ -25,7 +25,7 @@ def test_merger_analyzer():
     
     # Create all nodes
     feature_extractor = create_feature_extractor(llm)
-    compatibility_analyzer = create_compatibility_analyzer(vector_store, llm)
+    ipeds_semantic_search = create_ipeds_semantic_search(vector_store, llm)
     recommendation_formatter = create_recommendation_formatter(llm)
     final_recommender = create_final_recommender(llm)
     
@@ -68,7 +68,7 @@ def test_merger_analyzer():
     # Test compatibility analyzer
     print("\n2. Testing Compatibility Analyzer...")
     try:
-        state = compatibility_analyzer(state)
+        state = ipeds_semantic_search(state)
         print(f"\nFound {len(state['analyses'])} potential partners")
         for analysis in state["analyses"]:
             print(f"\nPartner: {analysis['school']}")

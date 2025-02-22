@@ -32,7 +32,6 @@ class ProgramLevel(str, Enum):
     OTHER_DOCTORATE = "Doctor's degree - other"
 
 
-# Legacy mappings for backward compatibility
 SECTOR_MAP: Dict[int, str] = {
     1: SectorType.PUBLIC_4YEAR,
     2: SectorType.PRIVATE_NONPROFIT_4YEAR,

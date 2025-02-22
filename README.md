@@ -11,10 +11,10 @@ SchoolMatch AI uses advanced language models and semantic search to analyze pote
    - Identifies key characteristics and requirements
    - Extracts searchable features
 
-2. Compatibility Analysis
+2. Semantic Search using IPEDS Vector Store
    - Performs semantic search across potential partners
    - Evaluates strategic alignment
-   - Generates detailed compatibility scores
+   - Generates detailed similarity scores
    - Considers multiple dimensions:
      - Financial compatibility
      - Academic program alignment
@@ -162,7 +162,7 @@ schoolmatch_v1/
 ├── langchain_app/
 │   ├── nodes/                    # Graph components
 │   │   ├── extract_target_features/  # Feature extraction
-│   │   ├── compatibility_analyzer/   # Partner analysis
+│   │   ├── ipeds_semantic_search/   # Partner analysis
 │   │   ├── rec_formatter/           # Recommendation formatting
 │   │   ├── final_rec/              # Final recommendation
 │   │   └── human_feedback/         # Feedback handling
