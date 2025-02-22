@@ -4,7 +4,7 @@ from enum import Enum
 from pydantic import BaseModel, Field
 from langgraph.graph.message import add_messages
 from langgraph.graph import START, END
-from models import AnalysisState, VectorDataBaseResults
+from models import VectorDataBaseResults
 
 
 class NodeName(str, Enum):
@@ -18,6 +18,7 @@ class NodeName(str, Enum):
     START = START
     END = END
 
+
 class State(BaseModel):
     """State definition for the school matcher graph"""
     messages: Annotated[list, add_messages] = []
@@ -26,6 +27,11 @@ class State(BaseModel):
     ipeds_semantic_search: list[VectorDataBaseResults] = []
     recommendations: str = ""
     final_recommendation: str = ""
+
+
+class SearchQuery(BaseModel):
+    search_query: str = Field(None, description="Search query for retrieval.")
+
 
 class HumanFeedbackSeparation(BaseModel):
     """Contains the human feedback for one task.
