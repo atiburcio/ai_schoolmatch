@@ -16,7 +16,7 @@ from langchain_app.nodes.rec_formatter.base import create_recommendation_formatt
 from langchain_app.nodes.final_rec.base import create_final_recommender
 from langchain_app.nodes.human_feedback.base import create_human_feedback_node, EMPTY_INPUT_MSG
 from db.college_vector_store import CollegeVectorStore
-from models.state import State, NodeName
+from models.state import State, NodeName, SearchQuery
 
 
 def create_school_matcher_graph(vector_store: CollegeVectorStore):
@@ -24,10 +24,14 @@ def create_school_matcher_graph(vector_store: CollegeVectorStore):
     # Load environment variables
     load_dotenv()
     
-    # Initialize the LLM
+    # Initialize the LLMs
     llm = ChatOpenAI(
         model="gpt-3.5-turbo",
         temperature=0,
+        api_key=os.getenv("OPENAI_API_KEY")
+    )
+    llm_4o = ChatOpenAI(
+        model="o3-mini",
         api_key=os.getenv("OPENAI_API_KEY")
     )
     
@@ -37,16 +41,14 @@ def create_school_matcher_graph(vector_store: CollegeVectorStore):
     # Add nodes
     graph_builder.add_node(NodeName.FEATURE_EXTRACTOR, create_feature_extractor(llm, vector_store))
     graph_builder.add_node(NodeName.IPEDS_SEARCH, create_ipeds_semantic_search(vector_store, llm))
-    graph_builder.add_node(NodeName.RECOMMENDATION_FORMATTER, create_recommendation_formatter(llm))
-    graph_builder.add_node(NodeName.FINAL_RECOMMENDER, create_final_recommender(llm))
+    graph_builder.add_node(NodeName.FINAL_RECOMMENDER, create_final_recommender(llm_4o))
 
     # Add nodes with edges
     graph_builder.add_node(NodeName.HUMAN_FEEDBACK, create_human_feedback_node())
     
     # Add edges
     graph_builder.add_edge(NodeName.FEATURE_EXTRACTOR, NodeName.IPEDS_SEARCH)
-    graph_builder.add_edge(NodeName.IPEDS_SEARCH, NodeName.RECOMMENDATION_FORMATTER)
-    graph_builder.add_edge(NodeName.RECOMMENDATION_FORMATTER, NodeName.FINAL_RECOMMENDER)
+    graph_builder.add_edge(NodeName.IPEDS_SEARCH, NodeName.FINAL_RECOMMENDER)
     graph_builder.add_edge(NodeName.FINAL_RECOMMENDER, NodeName.HUMAN_FEEDBACK)
     
     # Set the entry point
