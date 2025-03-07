@@ -1,4 +1,5 @@
 from typing import Callable
+import os
 
 from langchain.prompts.chat import (
     ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
@@ -10,10 +11,18 @@ from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
 
 from models.state import State, SearchQuery
-from langchain_app.nodes.web_search.prompt import SYSTEM_MESSAGE, HUMAN_MESSAGE
-from langchain_app.nodes.web_search.search_analysis_prompt import (
+from langchain_app.nodes.web_search.query_prompt import SYSTEM_MESSAGE, HUMAN_MESSAGE
+from langchain_app.nodes.web_search.analysis_prompt import (
     SYSTEM_MESSAGE as SEARCH_ANALYSIS_SYSTEM, HUMAN_MESSAGE as SEARCH_ANALYSIS_HUMAN
 )
+
+
+llm = ChatOpenAI(
+    model="gpt-4o",
+    temperature=0,
+    api_key=os.getenv("OPENAI_API_KEY")
+)
+
 
 @tool
 def create_web_search(llm: ChatOpenAI) -> Callable[[State], State]:
@@ -85,3 +94,11 @@ def create_web_search(llm: ChatOpenAI) -> Callable[[State], State]:
             return state
     
     return web_search
+
+
+def create_web_search_tool_node() -> ToolNode:
+    """Creates a node that performs web searches to enhance feature information."""
+    tools = [create_web_search]
+    tool_node = ToolNode(tools)
+    
+    return tool_node
