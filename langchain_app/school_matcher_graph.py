@@ -30,7 +30,7 @@ def create_school_matcher_graph(vector_store: CollegeVectorStore):
         temperature=0,
         api_key=os.getenv("OPENAI_API_KEY")
     )
-    llm_4o = ChatOpenAI(
+    llm_reasoning = ChatOpenAI(
         model="o3-mini",
         api_key=os.getenv("OPENAI_API_KEY")
     )
@@ -41,7 +41,7 @@ def create_school_matcher_graph(vector_store: CollegeVectorStore):
     # Add nodes
     graph_builder.add_node(NodeName.FEATURE_EXTRACTOR, create_feature_extractor(llm, vector_store))
     graph_builder.add_node(NodeName.IPEDS_SEARCH, create_ipeds_semantic_search(vector_store, llm))
-    graph_builder.add_node(NodeName.FINAL_RECOMMENDER, create_final_recommender(llm_4o))
+    graph_builder.add_node(NodeName.FINAL_RECOMMENDER, create_final_recommender(llm_reasoning))
 
     # Add nodes with edges
     graph_builder.add_node(NodeName.HUMAN_FEEDBACK, create_human_feedback_node())
