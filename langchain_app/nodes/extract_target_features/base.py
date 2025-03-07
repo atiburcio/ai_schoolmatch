@@ -36,7 +36,6 @@ def create_feature_extractor(llm: ChatOpenAI, vector_store: CollegeVectorStore) 
 
             response: AIMessage = chain.invoke({
                 "school": state.school,
-                "description": state.school,  # Using the original description
                 "ipeds_data": ipeds_data,
                 "run_name": "Feature Extraction"
             })
