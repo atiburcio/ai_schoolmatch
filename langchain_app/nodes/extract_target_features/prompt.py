@@ -8,6 +8,7 @@ Focus on these key areas:
     6. Technology: Infrastructure, online capabilities, computing resources
 
     Target School: {school}
+    Target School Description: {description}
     IPEDS Data: {ipeds_data}
     
     Extract and organize the key features from both the description and IPEDS data. Be specific and include
@@ -17,4 +18,5 @@ Focus on these key areas:
     """
 
 HUMAN_MESSAGE = """Target School: {school}
+Description: {description}
 IPEDS Data: {ipeds_data}"""
