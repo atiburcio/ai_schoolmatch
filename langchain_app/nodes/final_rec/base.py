@@ -30,7 +30,7 @@ def create_final_recommender() -> Callable[
         HumanMessagePromptTemplate.from_template(HUMAN_MESSAGE),
     ])
     
-    llm = ChatOpenAI(model="gpt-4o", api_key=os.getenv("OPENAI_API_KEY"))
+    llm = ChatOpenAI(model="gpt-4o", temperature=0, api_key=os.getenv("OPENAI_API_KEY"))
     llm_with_tools = llm.bind_tools([web_search])
     runnnable = prompt | llm_with_tools
     
@@ -52,15 +52,23 @@ def create_final_recommender() -> Callable[
             "run_name": "Final Recommendation"
         })
         
-        print(f"Debug - Has tool calls: {hasattr(response, 'tool_calls') and bool(response.tool_calls)}")
-        if hasattr(response, 'tool_calls') and response.tool_calls:
-            print(f"Debug - Tool calls: {response.tool_calls}")
-            updated_state = {"messages": state.messages + [response]}
-            next_node_name = NodeName.WEB_SEARCH
-        else:
-            updated_state = {"messages": state.messages + [response], "final_recommendation": response.content}
-            next_node_name = NodeName.HUMAN_FEEDBACK
+        # Improved debugging
+        print(f"\n\n=============== FINAL RECOMMENDER RESPONSE ===============")
+        print(f"Response type: {type(response)}")
+        print(f"Response attributes: {dir(response)}")
+        print(f"Tool calls attribute exists: {hasattr(response, 'tool_calls')}")
         
-        return Command(update=updated_state, goto=next_node_name)
+        if hasattr(response, 'tool_calls'):
+            print(f"Tool calls: {response.tool_calls}")
+            if response.tool_calls:
+                print(f"Found tool calls - directing to WEB_SEARCH node")
+                # We found tool calls, go to web search
+                updated_state = {"messages": state.messages + [response]}
+                return Command(update=updated_state, goto=NodeName.WEB_SEARCH)
+        
+        # No tool calls, proceed to human feedback
+        print(f"No tool calls found - proceeding to HUMAN_FEEDBACK node")
+        updated_state = {"messages": state.messages + [response], "final_recommendation": response.content}
+        return Command(update=updated_state, goto=NodeName.HUMAN_FEEDBACK)
     
     return final_recommender

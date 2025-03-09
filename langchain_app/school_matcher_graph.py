@@ -4,7 +4,7 @@ from time import sleep
 
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-from langgraph.graph import StateGraph, END
+from langgraph.graph import StateGraph
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command
@@ -12,12 +12,11 @@ from langchain_core.messages import BaseMessage
 
 from langchain_app.nodes.extract_target_features.base import create_feature_extractor
 from langchain_app.nodes.ipeds_semantic_search.base import create_ipeds_semantic_search
-from langchain_app.nodes.rec_formatter.base import create_recommendation_formatter
 from langchain_app.nodes.final_rec.base import create_final_recommender
-from langchain_app.nodes.web_search.base import create_web_search, create_web_search_tool_node
+from langchain_app.nodes.web_search.base import create_web_search_tool_node
 from langchain_app.nodes.human_feedback.base import create_human_feedback_node, EMPTY_INPUT_MSG
 from db.college_vector_store import CollegeVectorStore
-from models.state import State, NodeName, SearchQuery
+from models.state import State, NodeName
 
 
 def create_school_matcher_graph(vector_store: CollegeVectorStore):

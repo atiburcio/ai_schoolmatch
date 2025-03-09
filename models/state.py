@@ -29,10 +29,6 @@ class State(BaseModel):
     final_recommendation: str = ""
 
 
-class SearchQuery(BaseModel):
-    search_query: str = Field(None, description="Search query for retrieval.")
-
-
 class HumanFeedbackSeparation(BaseModel):
     """Contains the human feedback for one task.
     
