@@ -38,7 +38,7 @@ def create_school_matcher_graph(vector_store: CollegeVectorStore):
     # Add nodes
     graph_builder.add_node(NodeName.FEATURE_EXTRACTOR, create_feature_extractor(llm, vector_store))
     graph_builder.add_node(NodeName.IPEDS_SEARCH, create_ipeds_semantic_search(vector_store, llm))
-    graph_builder.add_node(NodeName.WEB_SEARCH, create_web_search_tool_node())
+    graph_builder.add_node(NodeName.WEB_SEARCH_TOOL, create_web_search_tool_node())
     
     # Add nodes with edges
     graph_builder.add_node(NodeName.FINAL_RECOMMENDER, create_final_recommender())
@@ -47,7 +47,7 @@ def create_school_matcher_graph(vector_store: CollegeVectorStore):
     # Add edges
     graph_builder.add_edge(NodeName.FEATURE_EXTRACTOR, NodeName.IPEDS_SEARCH)
     graph_builder.add_edge(NodeName.IPEDS_SEARCH, NodeName.FINAL_RECOMMENDER)
-    graph_builder.add_edge(NodeName.WEB_SEARCH, NodeName.FINAL_RECOMMENDER)
+    graph_builder.add_edge(NodeName.WEB_SEARCH_TOOL, NodeName.FINAL_RECOMMENDER)
     
     # Set the entry point
     graph_builder.set_entry_point(NodeName.FEATURE_EXTRACTOR)

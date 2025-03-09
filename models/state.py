@@ -10,7 +10,7 @@ from models import VectorDataBaseResults
 class NodeName(str, Enum):
     FINAL_RECOMMENDER = "final_recommender"
     FEATURE_EXTRACTOR = "feature_extractor"
-    WEB_SEARCH = "web_search"
+    WEB_SEARCH_TOOL = "web_search_tool"
     WIKIPEDIA_SEARCH = "wikipedia_search"
     IPEDS_SEARCH = "ipeds_search"
     RECOMMENDATION_FORMATTER = "recommendation_formatter"

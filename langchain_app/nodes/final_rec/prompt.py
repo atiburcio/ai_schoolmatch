@@ -27,7 +27,7 @@ Your final recommendation report should include:
 5. Closing Remarks
    - Final recommendation
    - Critical success factors
-   - How this addresses all feedback received
+   - How this addresses all feedback received, being sure to include any relevant tool call results
 
 Make sure to:
 1. Consider ALL feedback received when making your recommendation

@@ -14,7 +14,7 @@ from models.state import State, NodeName
 
 
 def create_final_recommender() -> Callable[
-    [State], Command[Literal[NodeName.WEB_SEARCH, NodeName.HUMAN_FEEDBACK]]
+    [State], Command[Literal[NodeName.WEB_SEARCH_TOOL, NodeName.HUMAN_FEEDBACK]]
 ]:
     """Creates a node that makes the final recommendation.
     
@@ -34,7 +34,7 @@ def create_final_recommender() -> Callable[
     llm_with_tools = llm.bind_tools([web_search])
     runnnable = prompt | llm_with_tools
     
-    def final_recommender(state: State) -> Command[Literal[NodeName.WEB_SEARCH, NodeName.HUMAN_FEEDBACK]]:
+    def final_recommender(state: State) -> Command[Literal[NodeName.WEB_SEARCH_TOOL, NodeName.HUMAN_FEEDBACK]]:
         """Generate final recommendation based on all analyses and feedback history."""
         # Extract any web search results from previous messages
         web_search_results = []
@@ -64,7 +64,7 @@ def create_final_recommender() -> Callable[
                 print(f"Found tool calls - directing to WEB_SEARCH node")
                 # We found tool calls, go to web search
                 updated_state = {"messages": state.messages + [response]}
-                return Command(update=updated_state, goto=NodeName.WEB_SEARCH)
+                return Command(update=updated_state, goto=NodeName.WEB_SEARCH_TOOL)
         
         # No tool calls, proceed to human feedback
         print(f"No tool calls found - proceeding to HUMAN_FEEDBACK node")

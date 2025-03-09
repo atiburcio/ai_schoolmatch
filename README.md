@@ -4,7 +4,7 @@ An AI-powered tool for identifying potential merger and acquisition (M&A) partne
 
 ## Overview
 
-SchoolMatch AI uses advanced language models and semantic search to analyze potential M&A partners for educational institutions. The system follows a structured workflow:
+The system follows a structured workflow:
 
 1. Feature Extraction
    - Analyzes input institution details
@@ -30,9 +30,11 @@ SchoolMatch AI uses advanced language models and semantic search to analyze pote
      - Risk assessments
      - Next steps
 
-4. Web Search
-   - Conducts a search of the web using Tavily
-   - Gives the LLM access to recent information found on the web
+4. Web Search (AvailableTool Call)
+   - The system can autonomously trigger web searches when it needs more data
+   - Uses Tavily API to search for recent and relevant information about educational institutions
+   - Integrates search results directly into the recommendation process
+   - Provides up to date information to the user
 
 5. Interactive Feedback
    - Collects user feedback on recommendations
@@ -160,27 +162,6 @@ To update the college data:
    - Get refined recommendations based on your input
 
 ## Key Features
-
-### Intelligent Tool Calling
-
-The SchoolMatch AI system incorporates an intelligent tool calling system that allows the LLMs to request additional information when needed:
-
-1. **Web Search Integration**
-   - The system can autonomously trigger web searches when it needs more data
-   - Uses Tavily API to search for recent and relevant information about educational institutions
-   - Integrates search results directly into the recommendation process
-
-2. **Dynamic Decision Pipeline**
-   - LLMs can determine when more information is needed
-   - Search requests are processed through a dedicated node in the LangGraph
-   - Results flow back into the recommendation process
-
-3. **Enhanced Data Accuracy**
-   - Provides up-to-date information not available in the static dataset
-   - Reduces hallucinations by grounding recommendations in real web data
-   - Improves the quality and relevance of merger recommendations
-
-This tool calling architecture enables a more dynamic and information-rich analysis, leading to better-informed M&A recommendations.
 
 ## Project Structure
 
