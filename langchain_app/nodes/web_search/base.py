@@ -1,87 +1,80 @@
 from typing import Callable
+import os
 
-from langchain.prompts.chat import (
-    ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
-)
-from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
 
-from models.state import State, SearchQuery
-from langchain_app.nodes.web_search.prompt import SYSTEM_MESSAGE, HUMAN_MESSAGE
-from langchain_app.nodes.web_search.search_analysis_prompt import (
-    SYSTEM_MESSAGE as SEARCH_ANALYSIS_SYSTEM, HUMAN_MESSAGE as SEARCH_ANALYSIS_HUMAN
-)
+from models.state import State
+
 
 @tool
-def create_web_search(llm: ChatOpenAI) -> Callable[[State], State]:
-    """Creates a node that performs web searches to enhance feature information.
-    
-    Args:
-        llm: Language model for generating search queries
-        
-    Returns:
-        Callable that takes a State and returns updated state with enhanced features
-    """
-    # Create prompt for generating search queries
-    query_prompt = ChatPromptTemplate.from_messages([
-        SystemMessagePromptTemplate.from_template(SYSTEM_MESSAGE),
-        HumanMessagePromptTemplate.from_template(HUMAN_MESSAGE),
-    ])
-    
-    # Create prompt for analyzing search results
-    analysis_prompt = ChatPromptTemplate.from_messages([
-        SystemMessagePromptTemplate.from_template(SEARCH_ANALYSIS_SYSTEM),
-        HumanMessagePromptTemplate.from_template(SEARCH_ANALYSIS_HUMAN),
-    ])
-    
-    # Create chains and tools
-    query_chain = query_prompt | llm
-    analysis_chain = analysis_prompt | llm
+def web_search(query: str) -> str:
+    """Search the web for information about a query using Tavily."""
     tavily_search = TavilySearchResults(max_results=10)
+    results = tavily_search.invoke(query)
     
-    def web_search(state: State) -> State:
-        """Enhance features with web search results."""
+    # Format the results
+    formatted_results = "\n\n".join(
+        [
+            f'Source: {doc["url"]}\n{doc["content"]}'
+            for doc in results
+        ]
+    )
+    
+    return formatted_results
+
+
+def create_web_search_tool_node() -> Callable[[State], State]:
+    """Creates a node that performs web searches to enhance feature information."""
+    tools = [web_search]
+    tool_node = ToolNode(tools)
+    
+    def web_search_with_state_update(state: State) -> State:
+        """Execute web search and update state with results"""
+        # Check if there's a message with tool calls
+        tool_calls = None
+        query = "general information about the school"
+        
+        # Extract query from tool calls if available
+        for message in reversed(state.messages):
+            if hasattr(message, 'tool_calls') and message.tool_calls:
+                tool_calls = message.tool_calls
+                # Extract the first tool call with name web_search
+                for tool_call in tool_calls:
+                    if tool_call.get('name') == 'web_search':
+                        query = tool_call.get('args', {}).get('query', query)
+                        break
+                break
+        
+        # Execute the tool node with the query
         try:
-            # Generate search query based on current features
-            query_response: AIMessage = query_chain.invoke({
-                "school": state.school,
-                "run_name": "Web Search Query Generation"
-            })
+            # Directly call the web search tool
+            search_result = web_search(query)
             
-            # Use the generated query to search using Tavily
-            search_query = SearchQuery(search_query=query_response.content)
-            search_results = tavily_search.invoke(search_query.search_query)
+            # Create a message with the results
+            result_message = AIMessage(content=f"Web Search Results:\n\n{search_result}")
             
-            # Format search results for analysis
-            formatted_results = "\n\n---\n\n".join(
-                [
-                    f'Source: {doc["url"]}\n{doc["content"]}'
-                    for doc in search_results
-                ]
-            )
-            
-            # Analyze search results and enhance features
-            analysis_response: AIMessage = analysis_chain.invoke({
-                "features": state.features,
-                "search_results": formatted_results,
-                "run_name": "Web Search Analysis"
-            })
-            
-            # Return updated state with enhanced features
+            # Return updated state
             return State(
                 school=state.school,
-                features=analysis_response.content,
+                features=state.features,
                 ipeds_semantic_search=state.ipeds_semantic_search,
                 recommendations=state.recommendations,
                 final_recommendation=state.final_recommendation,
-                messages=state.messages + [query_response, analysis_response]
+                messages=state.messages + [result_message]
             )
-            
         except Exception as e:
-            print(f"Error in web search: {str(e)}")
-            return state
+            print(f"Error executing web search: {str(e)}")
+            error_message = AIMessage(content=f"Error performing web search: {str(e)}")
+            return State(
+                school=state.school,
+                features=state.features,
+                ipeds_semantic_search=state.ipeds_semantic_search,
+                recommendations=state.recommendations,
+                final_recommendation=state.final_recommendation,
+                messages=state.messages + [error_message]
+            )
     
-    return web_search
+    return web_search_with_state_update

@@ -1,15 +1,21 @@
-from typing import Callable
+from typing import Callable, Literal
+import os
 
 from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
+from langgraph.types import Command
+from langgraph.prebuilt import ToolNode
 from langchain_app.nodes.final_rec.prompt import HUMAN_MESSAGE, SYSTEM_MESSAGE
+from langchain_app.nodes.web_search.base import web_search
 from langchain_app.utils.human_feedback import extract_feedback_history
 
-from models.state import State
+from models.state import State, NodeName
 
 
-def create_final_recommender(llm: ChatOpenAI) -> Callable[[State], State]:
+def create_final_recommender() -> Callable[
+    [State], Command[Literal[NodeName.WEB_SEARCH, NodeName.HUMAN_FEEDBACK]]
+]:
     """Creates a node that makes the final recommendation.
     
     Args:
@@ -24,32 +30,45 @@ def create_final_recommender(llm: ChatOpenAI) -> Callable[[State], State]:
         HumanMessagePromptTemplate.from_template(HUMAN_MESSAGE),
     ])
     
-    chain = prompt | llm
+    llm = ChatOpenAI(model="gpt-4o", temperature=0, api_key=os.getenv("OPENAI_API_KEY"))
+    llm_with_tools = llm.bind_tools([web_search])
+    runnnable = prompt | llm_with_tools
     
-    def final_recommender(state: State) -> State:
+    def final_recommender(state: State) -> Command[Literal[NodeName.WEB_SEARCH, NodeName.HUMAN_FEEDBACK]]:
         """Generate final recommendation based on all analyses and feedback history."""
-        try:
-            response: AIMessage = chain.invoke({
-                "ipeds_semantic_search": state.ipeds_semantic_search,
-                "human_feedback": extract_feedback_history(state.messages),
-                "run_name": "Final Recommendation"
-            })
-            return State(
-                school=state.school,
-                features=state.features,
-                ipeds_semantic_search=state.ipeds_semantic_search,
-                # recommendations=state.recommendations,
-                final_recommendation=response.content,
-                messages=state.messages + [response]
-            )
-        except Exception as e:
-            print(f"Error in final recommender: {str(e)}")
-            return State(
-                school=state.school,
-                features=state.features,
-                ipeds_semantic_search=state.ipeds_semantic_search,
-                # recommendations=state.recommendations,
-                final_recommendation=""
-            )
+        # Extract any web search results from previous messages
+        web_search_results = []
+        for msg in state.messages:
+            if hasattr(msg, 'content') and isinstance(msg.content, str) and msg.content.startswith("Web Search Results:"):
+                web_search_results.append(msg.content)
+        
+        web_search_info = "\n\n".join(web_search_results) if web_search_results else "No web search results available."
+        
+        # Invoke the chain with all available information
+        response: AIMessage = runnnable.invoke({
+            "ipeds_semantic_search": state.ipeds_semantic_search,
+            "human_feedback": extract_feedback_history(state.messages),
+            "web_search_results": web_search_info,
+            "run_name": "Final Recommendation"
+        })
+        
+        # Improved debugging
+        print(f"\n\n=============== FINAL RECOMMENDER RESPONSE ===============")
+        print(f"Response type: {type(response)}")
+        print(f"Response attributes: {dir(response)}")
+        print(f"Tool calls attribute exists: {hasattr(response, 'tool_calls')}")
+        
+        if hasattr(response, 'tool_calls'):
+            print(f"Tool calls: {response.tool_calls}")
+            if response.tool_calls:
+                print(f"Found tool calls - directing to WEB_SEARCH node")
+                # We found tool calls, go to web search
+                updated_state = {"messages": state.messages + [response]}
+                return Command(update=updated_state, goto=NodeName.WEB_SEARCH)
+        
+        # No tool calls, proceed to human feedback
+        print(f"No tool calls found - proceeding to HUMAN_FEEDBACK node")
+        updated_state = {"messages": state.messages + [response], "final_recommendation": response.content}
+        return Command(update=updated_state, goto=NodeName.HUMAN_FEEDBACK)
     
     return final_recommender
