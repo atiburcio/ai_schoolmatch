@@ -30,7 +30,11 @@ SchoolMatch AI uses advanced language models and semantic search to analyze pote
      - Risk assessments
      - Next steps
 
-4. Interactive Feedback
+4. Web Search
+   - Conducts a search of the web using Tavily
+   - Gives the LLM access to recent information found on the web
+
+5. Interactive Feedback
    - Collects user feedback on recommendations
    - Refines suggestions based on input
    - Allows for iterative improvement
@@ -155,6 +159,29 @@ To update the college data:
    - Input feedback when prompted
    - Get refined recommendations based on your input
 
+## Key Features
+
+### Intelligent Tool Calling
+
+The SchoolMatch AI system incorporates an intelligent tool calling system that allows the LLMs to request additional information when needed:
+
+1. **Web Search Integration**
+   - The system can autonomously trigger web searches when it needs more data
+   - Uses Tavily API to search for recent and relevant information about educational institutions
+   - Integrates search results directly into the recommendation process
+
+2. **Dynamic Decision Pipeline**
+   - LLMs can determine when more information is needed
+   - Search requests are processed through a dedicated node in the LangGraph
+   - Results flow back into the recommendation process
+
+3. **Enhanced Data Accuracy**
+   - Provides up-to-date information not available in the static dataset
+   - Reduces hallucinations by grounding recommendations in real web data
+   - Improves the quality and relevance of merger recommendations
+
+This tool calling architecture enables a more dynamic and information-rich analysis, leading to better-informed M&A recommendations.
+
 ## Project Structure
 
 ```
@@ -165,6 +192,7 @@ schoolmatch_v1/
 │   │   ├── ipeds_semantic_search/   # Partner analysis
 │   │   ├── rec_formatter/           # Recommendation formatting
 │   │   ├── final_rec/              # Final recommendation
+│   │   ├── web_search/             # Web search functionality
 │   │   └── human_feedback/         # Feedback handling
 │   └── utils/                    # Utility functions
 ├── db/                          # Vector store implementation
