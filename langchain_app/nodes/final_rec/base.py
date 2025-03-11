@@ -30,7 +30,7 @@ def create_final_recommender() -> Callable[
         HumanMessagePromptTemplate.from_template(HUMAN_MESSAGE),
     ])
     
-    llm = ChatOpenAI(model="gpt-4o", temperature=0, api_key=os.getenv("OPENAI_API_KEY"))
+    llm = ChatOpenAI(model="o3-mini", api_key=os.getenv("OPENAI_API_KEY"))
     llm_with_tools = llm.bind_tools([web_search])
     runnnable = prompt | llm_with_tools
     
