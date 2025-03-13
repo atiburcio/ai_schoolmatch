@@ -97,13 +97,13 @@ The system follows a structured workflow:
 5. Initialize the Vector Store:
    ```bash
    # This script will process the IPEDS data and create the ChromaDB vector store
-   python scripts/access_to_vector_mac.py
+   python scripts/optimized_access_to_vector_mac.py
    ```
 
 6. Verify the setup:
    ```bash
    # Test the vector store with a sample query
-   python scripts/test_vector_store.py
+   python scripts/query_vector_db.py
    ```
 
 The system will create a `chroma_db` directory to store the vector embeddings. This only needs to be done once unless you want to update the IPEDS data.
