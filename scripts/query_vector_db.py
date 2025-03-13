@@ -15,8 +15,8 @@ def main():
         model_name="text-embedding-ada-002"
     )
     
-    # Initialize Chroma client
-    chroma_client = chromadb.PersistentClient(path="chroma_db")
+    # Initialize Chroma client with absolute path
+    chroma_client = chromadb.PersistentClient(path="/Users/anthonytiburcio/Documents/GitHub/schoolmatch_v1/chroma_db")
     
     # Get the collection
     collection = chroma_client.get_collection(
@@ -24,90 +24,110 @@ def main():
         embedding_function=openai_ef
     )
     
-    # Query for Stanford University
+    # Get user input for query
+    query = input("Enter a school name or description to search for: ")
+    if not query.strip():
+        query = "Stanford University"  # Default if nothing entered
+    
+    # Set number of results
+    num_results = input("How many results would you like to see? (default: 3): ")
+    try:
+        n_results = int(num_results)
+    except (ValueError, TypeError):
+        n_results = 3  # Default if invalid input
+    
+    print(f"\nSearching for: '{query}' (showing top {n_results} results)")
+    
+    # Execute the query
     results = collection.query(
-        query_texts=["Stanford University"],
-        n_results=3
+        query_texts=[query],
+        n_results=n_results,
+        include=["documents", "metadatas", "distances"]
     )
     
-    # Print full results
-    for i, (doc, metadata) in enumerate(zip(results['documents'][0], results['metadatas'][0])):
-        print(f"\nResult {i+1}:")
-        print(doc)
-        print("\nMetadata:")
+    # Print results
+    if not results['documents'][0]:
+        print("No results found.")
+        return
+    
+    for i, (doc, metadata, distance) in enumerate(zip(
+        results['documents'][0], 
+        results['metadatas'][0],
+        results['distances'][0]
+    )):
+        print(f"\n{'=' * 60}")
+        print(f"Result {i+1} (Similarity: {1-distance:.2f})")
+        print(f"{'=' * 60}")
+        
+        # Basic info
+        print(f"Institution: {metadata.get('INSTNM', 'Unknown')}")
+        location = f"{metadata.get('CITY', '')}, {metadata.get('STABBR', '')}"
+        print(f"Location: {location}")
+        print(f"Website: {metadata.get('WEBADDR', 'N/A')}")
+        print(f"Control: {'Public' if metadata.get('CONTROL') == 1 else 'Private non-profit' if metadata.get('CONTROL') == 2 else 'Private for-profit' if metadata.get('CONTROL') == 3 else 'Unknown'}")
+        
+        # Tuition
         if 'TUITION1' in metadata:
-            print(f"In-state tuition: ${metadata['TUITION1']:,.2f}")
+            print(f"In-state tuition: ${float(metadata['TUITION1']):,.2f}")
         if 'TUITION2' in metadata:
-            print(f"Out-of-state tuition: ${metadata['TUITION2']:,.2f}")
+            print(f"Out-of-state tuition: ${float(metadata['TUITION2']):,.2f}")
+        
+        # Financial data
+        print("\nFinancial Information:")
+        
+        # Check for F1A (public) data
+        f1a_fields = {
+            'F1A18': "Total revenues",
+            'F1A43': "Total expenses", 
+            'F1A02': "Total assets"
+        }
+        fin_found = False
+        for field, label in f1a_fields.items():
+            if field in metadata and metadata[field]:
+                if not fin_found:
+                    print("  Public Institution Data:")
+                    fin_found = True
+                print(f"  - {label}: ${float(metadata[field]):,.2f}")
+        
+        # Check for F2 (private for-profit) data
+        f2_fields = {
+            'F2D01': "Total revenues", 
+            'F2D02': "Total expenses",
+            'F2C19': "Total assets"
+        }
+        fin_found = False
+        for field, label in f2_fields.items():
+            if field in metadata and metadata[field]:
+                if not fin_found:
+                    print("  Private For-Profit Institution Data:")
+                    fin_found = True
+                print(f"  - {label}: ${float(metadata[field]):,.2f}")
+        
+        # Check for F3 (private non-profit) data
+        f3_fields = {
+            'F3D01': "Total revenues", 
+            'F3D02': "Total expenses",
+            'F3C19': "Total assets",
+            'F3H01': "Endowment assets"
+        }
+        fin_found = False
+        for field, label in f3_fields.items():
+            if field in metadata and metadata[field]:
+                if not fin_found:
+                    print("  Private Non-Profit Institution Data:")
+                    fin_found = True
+                print(f"  - {label}: ${float(metadata[field]):,.2f}")
+        
+        # Mission statement URL
+        if 'missionURL' in metadata and metadata['missionURL']:
+            print(f"\nMission Statement URL: {metadata['missionURL']}")
+        
+        # Brief text excerpt
+        print("\nExcerpt:")
+        excerpt = doc[:500] + "..." if len(doc) > 500 else doc
+        print(excerpt)
     
-    # Get the data
-    doc = results['documents'][0][0]
-    metadata = results['metadatas'][0][0]
-    
-    print("\nDetailed Data for Stanford University")
-    print("=" * 50)
-    
-    # Basic Information (HD2023)
-    print("\nBasic Information (HD2023):")
-    print("-" * 30)
-    basic_fields = ['INSTNM', 'CITY', 'STABBR', 'ZIP', 'WEBADDR', 'ADMINURL', 
-                   'FAIDURL', 'NPRICURL', 'SECTOR', 'CONTROL', 'LOCALE', 'LATITUDE', 'LONGITUDE']
-    for field in basic_fields:
-        if field in metadata:
-            print(f"{field}: {metadata[field]}")
-    
-    # Institutional Characteristics (IC2023)
-    print("\nInstitutional Characteristics (IC2023):")
-    print("-" * 30)
-    
-    # Programs offered
-    print("\nPrograms Offered:")
-    levels = {
-        'LEVEL1': 'Less than one year certificate',
-        'LEVEL2': 'One but less than two years certificate',
-        'LEVEL3': "Associate's degree",
-        'LEVEL4': 'Two but less than 4 years certificate',
-        'LEVEL5': "Bachelor's degree",
-        'LEVEL6': 'Postbaccalaureate certificate',
-        'LEVEL7': "Master's degree",
-        'LEVEL8': 'Post-master\'s certificate',
-        'LEVEL17': 'Doctor\'s degree - research/scholarship',
-        'LEVEL18': 'Doctor\'s degree - professional practice',
-        'LEVEL19': 'Doctor\'s degree - other'
-    }
-    for level, desc in levels.items():
-        if level in metadata and metadata[level] == 1:
-            print(f"- {desc}")
-    
-    # Student Services
-    print("\nStudent Services:")
-    services = {
-        'STUSRV1': 'Remedial services',
-        'STUSRV2': 'Academic/career counseling',
-        'STUSRV3': 'Employment services for current students',
-        'STUSRV4': 'Placement services for program completers',
-        'STUSRV8': 'On-campus day care for children of students',
-        'STUSRV9': 'None of the above'
-    }
-    for service, desc in services.items():
-        if service in metadata and metadata[service] == 1:
-            print(f"- {desc}")
-    
-    # Distance Education
-    print("\nDistance Education:")
-    if 'DISTCRS' in metadata:
-        print("Offers distance education courses" if metadata['DISTCRS'] == 1 else "Does not offer distance education courses")
-    
-    # Mission Statement (IC2023Mission)
-    print("\nMission Statement:")
-    print("-" * 30)
-    if 'mission' in metadata:
-        print(metadata['mission'] if metadata['mission'] != 'nan' else "No mission statement available")
-    
-    # Generated Description
-    print("\nGenerated Description:")
-    print("-" * 30)
-    print(doc)
+    print("\nQuery complete.")
 
 if __name__ == "__main__":
     main()
