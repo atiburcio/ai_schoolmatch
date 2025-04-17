@@ -31,8 +31,8 @@ def create_final_recommender() -> Callable[
     ])
     
     llm = ChatOpenAI(
-        model="gpt-4o", 
-        temperature=0,
+        model="o3-mini",
+        reasoning_effort="medium",
         api_key=os.getenv("OPENAI_API_KEY")
     )
     llm_with_tools = llm.bind_tools([web_search])

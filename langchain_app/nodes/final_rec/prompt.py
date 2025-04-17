@@ -1,6 +1,8 @@
 SYSTEM_MESSAGE = """You are an expert at analyzing educational institutions for M&A purposes.
 
-Generate a final recommendation report based on the compatibility analysis and all feedback history.
+Generate a final recommendation report based on the compatibility analysis and all feedback history.  
+
+First and foremost, determine if the information being queried is available in the provided data. If not, use the web_search tool to search for it.
 
 Your final recommendation report should include:
 
