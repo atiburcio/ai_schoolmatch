@@ -10,7 +10,10 @@ from langchain_app.nodes.extract_target_features.prompt import HUMAN_MESSAGE, SY
 
 from models.state import State
  
-def create_feature_extractor(llm: ChatOpenAI, vector_store: CollegeVectorStore) -> Callable[[State], State]:
+def create_feature_extractor(
+    llm: ChatOpenAI, 
+    vector_store: CollegeVectorStore
+) -> Callable[[State], State]:
     """Creates a node that extracts M&A-relevant features from the target institution.
     
     Args:

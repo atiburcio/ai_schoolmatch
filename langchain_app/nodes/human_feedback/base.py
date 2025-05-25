@@ -17,8 +17,8 @@ def create_human_feedback_node(
     Creates a node that prompts the user for feedback on the final recommendation.
 
     Returns:
-        Callable: A function that takes a State and returns a Command 
-                  with a Literal indicating the next node name.
+        A function that takes a State and returns a Command 
+        with a Literal indicating the next node name.
     """
 
     human_feedback_func = create_get_human_feedback(
@@ -37,7 +37,7 @@ def create_human_feedback_node(
             state (State): The current state.
 
         Returns:
-            Command: The command to transition to the next node.
+            The command to transition to the next node.
         """
         return human_feedback_func(state)
 
@@ -56,10 +56,11 @@ def create_get_human_feedback(
     Args:
         messages_primary_key (str): Primary key for the messages list in the state.
         node_one_name (NodeName): Name of the node to go to if the user provides feedback.
-        node_no_feedback_name (NodeName): Name of the node to go to if the user does not provide feedback.
+        node_no_feedback_name (NodeName): 
+            Name of the node to go to if the user does not provide feedback.
 
     Returns:
-        Callable: A function that takes a BaseModel state and returns a Command.
+        A function that takes a BaseModel state and returns a Command.
     """
 
     def get_human_feedback(state: BaseModel) -> Command:
@@ -70,7 +71,7 @@ def create_get_human_feedback(
             state (BaseModel): State with the final recommendation.
 
         Returns:
-            Command: The command to update state and transition to the next node.
+            The command to update state and transition to the next node.
         """
         human_feedback_text = interrupt(HUMAN_FEEDBACK_INPUT_MSG)
         if human_feedback_text == EMPTY_INPUT_MSG:
@@ -97,7 +98,7 @@ def _get_command_for_no_feedback(node_no_feedback_name: NodeName) -> Command:
         node_no_feedback_name (NodeName): The node to transition to if no feedback is provided.
 
     Returns:
-        Command: The command to transition to the 'no feedback' node.
+        The command to transition to the 'no feedback' node.
     """
     return Command(goto=node_no_feedback_name)
 
@@ -116,7 +117,7 @@ def _get_updated_state(
         state (BaseModel): The current state containing existing messages.
 
     Returns:
-        dict: A dictionary representing the updated state.
+        A dictionary representing the updated state.
     """
     new_messages = create_human_feedback_message_list(human_feedback_text)
     existing_messages = getattr(state, messages_primary_key, [])
@@ -135,6 +136,6 @@ def _get_next_node_name(
         node_one_name (NodeName): The node to transition to if feedback is provided.
 
     Returns:
-        NodeName: The next node name.
+        The next node name.
     """
     return node_one_name

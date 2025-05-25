@@ -4,7 +4,6 @@ import os
 from langchain_core.messages import AIMessage
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.tools import tool
-from langgraph.prebuilt import ToolNode
 
 from models.state import State
 
@@ -28,8 +27,6 @@ def web_search(query: str) -> str:
 
 def create_web_search_tool_node() -> Callable[[State], State]:
     """Creates a node that performs web searches to enhance feature information."""
-    tools = [web_search]
-    tool_node = ToolNode(tools)
     
     def web_search_with_state_update(state: State) -> State:
         """Execute web search and update state with results"""

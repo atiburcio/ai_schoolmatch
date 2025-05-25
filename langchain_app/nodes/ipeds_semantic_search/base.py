@@ -88,9 +88,11 @@ def create_ipeds_semantic_search(vector_store: CollegeVectorStore, llm: ChatOpen
                 
                 ipeds_semantic_search.append(VectorDataBaseResults(
                     school=match['metadata'].get('INSTNM', 'Unknown Institution'),
-                    location=f"{match['metadata'].get('CITY', 'N/A')}, {match['metadata'].get('STABBR', 'N/A')}",
+                    location=(
+                        f"{match['metadata'].get('CITY', 'N/A')}, {match['metadata'].get('STABBR', 'N/A')}"
+                    ),
                     analysis=response.content,
-                    similarity_score=1.0 - match['distance']  # Convert distance to similarity
+                    similarity_score=1.0 - match['distance']
                 ))
                 
                 # Only keep top 10 matches
@@ -103,7 +105,7 @@ def create_ipeds_semantic_search(vector_store: CollegeVectorStore, llm: ChatOpen
                 ipeds_semantic_search=ipeds_semantic_search,
                 recommendations=state.recommendations,
                 final_recommendation=state.final_recommendation,
-                messages=state.messages + [response]  # Add new message while preserving existing ones
+                messages=state.messages + [response] 
             )
             
         except Exception as e:

@@ -38,15 +38,24 @@ def create_final_recommender() -> Callable[
     llm_with_tools = llm.bind_tools([web_search])
     runnnable = prompt | llm_with_tools
     
-    def final_recommender(state: State) -> Command[Literal[NodeName.WEB_SEARCH_TOOL, NodeName.HUMAN_FEEDBACK]]:
+    def final_recommender(
+        state: State
+    ) -> Command[Literal[NodeName.WEB_SEARCH_TOOL, NodeName.HUMAN_FEEDBACK]]:
         """Generate final recommendation based on all analyses and feedback history."""
         # Extract any web search results from previous messages
         web_search_results = []
         for msg in state.messages:
-            if hasattr(msg, 'content') and isinstance(msg.content, str) and msg.content.startswith("Web Search Results:"):
+            if (
+                hasattr(msg, 'content') 
+                and isinstance(msg.content, str) 
+                and msg.content.startswith("Web Search Results:")
+                ):
                 web_search_results.append(msg.content)
         
-        web_search_info = "\n\n".join(web_search_results) if web_search_results else "No web search results available."
+        web_search_info = (
+            "\n\n".join(web_search_results) if web_search_results 
+            else "No web search results available."
+        )
         
         # Invoke the chain with all available information
         response: AIMessage = runnnable.invoke({
@@ -72,7 +81,9 @@ def create_final_recommender() -> Callable[
         
         # No tool calls, proceed to human feedback
         print(f"No tool calls found - proceeding to HUMAN_FEEDBACK node")
-        updated_state = {"messages": state.messages + [response], "final_recommendation": response.content}
+        updated_state = (
+            {"messages": state.messages + [response], "final_recommendation": response.content}
+        )
         return Command(update=updated_state, goto=NodeName.HUMAN_FEEDBACK)
     
     return final_recommender

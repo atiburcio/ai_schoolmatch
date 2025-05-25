@@ -1,6 +1,10 @@
 from typing import Callable
 
-from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
+from langchain.prompts.chat import (
+    ChatPromptTemplate,
+    SystemMessagePromptTemplate,
+    HumanMessagePromptTemplate
+)
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
 from langchain_app.nodes.rec_formatter.prompt import HUMAN_MESSAGE, SYSTEM_MESSAGE
@@ -29,7 +33,9 @@ def create_recommendation_formatter(llm: ChatOpenAI) -> Callable[[State], State]
         """Format recommendations based on compatibility analyses."""
         try:
             response: AIMessage = chain.invoke({
-                "ipeds_semantic_search": str([analysis.model_dump() for analysis in state.ipeds_semantic_search]),
+                "ipeds_semantic_search": str(
+                    [analysis.model_dump() for analysis in state.ipeds_semantic_search]
+                ),
                 "run_name": "Recommendation Formatting"
             })
             return State(
