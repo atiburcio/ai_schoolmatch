@@ -30,7 +30,7 @@ The system follows a structured workflow:
      - Risk assessments
      - Next steps
 
-4. Web Search (AvailableTool Call)
+4. Web Search (Available Tool Call)
    - The system can autonomously trigger web searches when it needs more data
    - Uses Tavily API to search for recent and relevant information about educational institutions
    - Integrates search results directly into the recommendation process
