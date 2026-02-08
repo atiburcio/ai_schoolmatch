@@ -109,4 +109,6 @@ def run_school_matcher(graph: CompiledStateGraph, school_description: str, confi
 def create_graph_config() -> dict:
     return {
         "configurable": {"thread_id": "1"},
+        "metadata": {"langsmith_project": "schoolmatch"},
+        "callbacks": [],
     }

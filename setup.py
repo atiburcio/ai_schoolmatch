@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name="schoolmatch",
@@ -10,6 +10,11 @@ setup(
         "chromadb",
         "fastapi",
         "uvicorn",
-        "openai"
+        "openai",
     ],
+    entry_points={
+        "console_scripts": [
+            "schoolmatch=langchain_app.cli:main",
+        ]
+    },
 )

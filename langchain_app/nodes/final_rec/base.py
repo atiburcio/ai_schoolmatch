@@ -1,13 +1,23 @@
 from typing import Callable, Literal
 import os
 
-from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
+from langchain_core.prompts import (
+    ChatPromptTemplate,
+    HumanMessagePromptTemplate,
+    SystemMessagePromptTemplate,
+)
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
 from langgraph.types import Command
 from langgraph.prebuilt import ToolNode
 from langchain_app.nodes.final_rec.prompt import HUMAN_MESSAGE, SYSTEM_MESSAGE
-from langchain_app.nodes.web_search.base import web_search
+from langchain_core.tools import tool
+
+
+@tool
+def web_search(query: str) -> str:
+    """Search the web for information about a query."""
+    return query
 from langchain_app.utils.human_feedback import extract_feedback_history
 
 from models.state import State, NodeName
