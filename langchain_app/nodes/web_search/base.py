@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Callable
 
 from langchain_core.messages import AIMessage
+from langgraph.checkpoint.memory import MemorySaver
 
 from models.state import State
 
@@ -18,15 +20,23 @@ except ImportError as e:
         "Install it with: pip install deepagents"
     ) from e
 
+SKILLS_DIR = Path(__file__).resolve().parents[3] / "skills"
+
 
 def create_web_search_tool_node() -> Callable[[State], State]:
+    skill_path = SKILLS_DIR / "web-research" / "SKILL.md"
+    skill_content = skill_path.read_text()
+
+    skills_files = {
+        "/skills/web-research/SKILL.md": skill_content,
+    }
+
+    checkpointer = MemorySaver()
+
     agent = create_deep_agent(
-        system_prompt=(
-            "You are a web research agent for higher-education institution due diligence. "
-            "When given a search query, use the web_search tool to gather recent, relevant facts. "
-            "Synthesize results into concise bullet points and include source URLs."
-        ),
         tools=[tavily_web_search],
+        skills=["./skills/"],
+        checkpointer=checkpointer,
     )
 
     def web_search_with_state_update(state: State) -> State:
@@ -44,7 +54,13 @@ def create_web_search_tool_node() -> Callable[[State], State]:
             query = f"general information about {state.school}" if state.school else "general information about the school"
             logger.warning("No web_search tool call found in messages; falling back to query: %s", query)
 
-        result = agent.invoke({"messages": [{"role": "user", "content": query}]})
+        result = agent.invoke(
+            {
+                "messages": [{"role": "user", "content": query}],
+                "files": skills_files,
+            },
+            config={"configurable": {"thread_id": "web-search"}},
+        )
         content = result["messages"][-1].content
 
         return {"messages": [AIMessage(content=f"Web Search Results:\n\n{content}")]}

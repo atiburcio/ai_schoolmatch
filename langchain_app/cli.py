@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import warnings
+
+warnings.filterwarnings('ignore', message='typing.NotRequired is not a Python type')
+warnings.filterwarnings('ignore', category=UserWarning, module='pydantic._internal._generate_schema')
 
 from langsmith import tracing_context
 
