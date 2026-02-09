@@ -1,6 +1,6 @@
 # SchoolMatch AI
 
-An AI-powered tool for identifying potential merger and acquisition (M&A) partners for educational institutions, leveraging LangChain and LangGraph for intelligent analysis and recommendations.
+An AI-powered tool for identifying potential merger and acquisition (M&A) partners for educational institutions, leveraging LangChain, LangGraph, and Deep Agents for intelligent analysis and recommendations.
 
 ## Overview
 
@@ -30,11 +30,11 @@ The system follows a structured workflow:
      - Risk assessments
      - Next steps
 
-4. Web Search (Available Tool Call)
-   - The system can autonomously trigger web searches when it needs more data
-   - Uses Tavily API to search for recent and relevant information about educational institutions
+4. Web Search (Deep Agents)
+   - Uses a Deep Agent with a `web-research` skill for higher-ed due diligence
+   - Progressively discloses research instructions via the skill system
    - Integrates search results directly into the recommendation process
-   - Provides up to date information to the user
+   - Provides up-to-date information to the user
 
 5. Interactive Feedback
    - Collects user feedback on recommendations
@@ -46,10 +46,11 @@ The system follows a structured workflow:
 
 ## Technologies
 
-- LangChain: Framework for LLM application development
-- LangGraph: For building structured AI workflows
-- Vector Store: For semantic search of institutions
-- Pydantic: For data validation and state management
+- **LangChain v1**: Framework for LLM application development
+- **LangGraph**: For building structured AI workflows
+- **Deep Agents**: For the web search node with skills-based progressive disclosure
+- **ChromaDB**: Vector store for semantic search of institutions
+- **Pydantic v2**: For data validation and state management
 
 ## Setup
 
@@ -96,13 +97,11 @@ The system follows a structured workflow:
 
 5. Initialize the Vector Store:
    ```bash
-   # This script will process the IPEDS data and create the ChromaDB vector store
    python scripts/optimized_access_to_vector_mac.py
    ```
 
 6. Verify the setup:
    ```bash
-   # Test the vector store with a sample query
    python scripts/query_vector_db.py
    ```
 
@@ -131,54 +130,50 @@ To update the college data:
 
 ## Usage
 
-1. Initialize the system:
-   ```python
-   from langchain_app.school_matcher_graph import create_school_matcher_graph, run_school_matcher
-   from db.college_vector_store import CollegeVectorStore
+### CLI
 
-   # Initialize vector store
-   vector_store = CollegeVectorStore()
-   
-   # Create graph
-   graph = create_school_matcher_graph(vector_store)
-   ```
+```bash
+schoolmatch --school "A private liberal arts college with 2,000 students, strong humanities programs, and interest in expanding STEM offerings. Located in New England with \$50M endowment."
+```
 
-2. Run analysis:
-   ```python
-   # Describe your institution
-   school_description = """
-   A private liberal arts college with 2,000 students,
-   strong humanities programs, and interest in expanding STEM offerings.
-   Located in New England with $50M endowment.
-   """
-   
-   # Run analysis
-   run_school_matcher(graph, school_description, {})
-   ```
+### Python
 
-3. Provide feedback:
-   - Review recommendations
-   - Input feedback when prompted
-   - Get refined recommendations based on your input
+```python
+from langchain_app.school_matcher_graph import (
+    create_school_matcher_graph, run_school_matcher, create_graph_config
+)
+from db.college_vector_store import CollegeVectorStore
 
-## Key Features
+vector_store = CollegeVectorStore()
+graph = create_school_matcher_graph(vector_store)
+run_school_matcher(graph, "your school description", create_graph_config())
+```
+
+### Notebook
+
+See `school_matcher_demo.ipynb` for an interactive walkthrough.
 
 ## Project Structure
 
 ```
 schoolmatch_v1/
 ├── langchain_app/
-│   ├── nodes/                    # Graph components
-│   │   ├── extract_target_features/  # Feature extraction
+│   ├── cli.py                       # CLI entry point
+│   ├── school_matcher_graph.py      # Graph definition
+│   ├── nodes/                       # Graph nodes
+│   │   ├── extract_target_features/ # Feature extraction
 │   │   ├── ipeds_semantic_search/   # Partner analysis
 │   │   ├── rec_formatter/           # Recommendation formatting
-│   │   ├── final_rec/              # Final recommendation
-│   │   ├── web_search/             # Web search functionality
-│   │   └── human_feedback/         # Feedback handling
-│   └── utils/                    # Utility functions
-├── db/                          # Vector store implementation
-├── models/                      # Data models
-└── data/                        # Resources and data
+│   │   ├── final_rec/               # Final recommendation
+│   │   ├── web_search/              # Deep Agents web search
+│   │   └── human_feedback/          # Feedback handling
+│   └── utils/                       # Utility functions
+├── skills/
+│   └── web-research/                # Deep Agents skill for web search
+│       └── SKILL.md
+├── db/                              # Vector store implementation
+├── models/                          # Data models and state definitions
+└── data/                            # Resources and data
 ```
 
 ## Contributing
